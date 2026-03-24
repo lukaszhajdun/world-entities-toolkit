@@ -1,0 +1,28 @@
+{
+  "WET": {
+    "ModuleTitle": "World Entities Toolkit",
+    "Log": {
+      "Init": "Inicjalizacja modułu World Entities Toolkit",
+      "Ready": "Moduł World Entities Toolkit jest gotowy"
+    },
+    "Settings": {
+      "Debug": {
+        "Name": "Włącz logowanie debug",
+        "Hint": "Zapisuj szczegółowe komunikaty modułu World Entities Toolkit w konsoli przeglądarki."
+      }
+    },
+    "Common": {
+      "Notes": "Notatki",
+      "Description": "Opis",
+      "Add": "Dodaj",
+      "Remove": "Usuń"
+    }
+  },
+  "TYPES": {
+    "Actor": {
+      "group": "Grupa",
+      "vehicle": "Pojazd",
+      "faction": "Frakcja"
+    }
+  }
+}

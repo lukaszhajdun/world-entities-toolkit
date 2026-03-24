@@ -1,0 +1,57 @@
+:root {
+  --wet-space-1: 0.25rem;
+  --wet-space-2: 0.5rem;
+  --wet-space-3: 0.75rem;
+  --wet-space-4: 1rem;
+
+  --wet-radius-sm: 6px;
+  --wet-radius-md: 10px;
+
+  --wet-border-color: rgba(255, 255, 255, 0.16);
+  --wet-muted-text: rgba(255, 255, 255, 0.7);
+  --wet-panel-bg: rgba(0, 0, 0, 0.12);
+}
+
+.world-entities-toolkit,
+.app.world-entities-toolkit,
+.sheet.world-entities-toolkit {
+  --wet-local-space-1: var(--wet-space-1);
+  --wet-local-space-2: var(--wet-space-2);
+  --wet-local-space-3: var(--wet-space-3);
+  --wet-local-space-4: var(--wet-space-4);
+  --wet-local-radius-sm: var(--wet-radius-sm);
+  --wet-local-radius-md: var(--wet-radius-md);
+  --wet-local-border-color: var(--wet-border-color);
+  --wet-local-muted-text: var(--wet-muted-text);
+  --wet-local-panel-bg: var(--wet-panel-bg);
+}
+
+.wet-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+}
+
+.wet-inline-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--wet-space-1);
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0 var(--wet-space-2);
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-sm);
+  background: transparent;
+  cursor: pointer;
+}
+
+.wet-muted {
+  color: var(--wet-muted-text);
+}
