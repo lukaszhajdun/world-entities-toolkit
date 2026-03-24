@@ -22,7 +22,12 @@
     "Actor": {
       "group": "Grupa",
       "vehicle": "Pojazd",
-      "faction": "Frakcja"
+      "faction": "Frakcja",
+      "world-entities-toolkit": {
+        "group": "Grupa (WE)",
+        "vehicle": "Pojazd (WE)",
+        "faction": "Frakcja (WE)"
+      }
     }
   }
 }

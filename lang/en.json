@@ -22,7 +22,12 @@
     "Actor": {
       "group": "Group",
       "vehicle": "Vehicle",
-      "faction": "Faction"
+      "faction": "Faction",
+      "world-entities-toolkit": {
+        "group": "Group (WE)",
+        "vehicle": "Vehicle (WE)",
+        "faction": "Faction (WE)"
+      }
     }
   }
 }
