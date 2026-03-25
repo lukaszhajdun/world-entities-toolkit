@@ -1,26 +1,27 @@
 <form class="wet-sheet wet-group-sheet {{cssClass}}" autocomplete="off">
-  <div class="wet-sheet-toolbar">
-    <button
-      class="wet-lock-toggle {{#if isLocked}}is-locked{{else}}is-unlocked{{/if}}"
-      type="button"
-      data-lock-toggle="true"
-      title="{{lockToggleTitle}}"
-      aria-label="{{lockToggleLabel}}"
-      {{#unless canToggleLock}}disabled{{/unless}}
-    >
-      <i class="{{lockToggleIcon}}" aria-hidden="true"></i>
-      <span class="wet-visually-hidden">{{lockToggleLabel}}</span>
-    </button>
-  </div>
-
   <div class="wet-group-shell">
     <div class="wet-group-shell__grid">
       <div class="wet-group-shell__left">
         <section class="wet-sheet__section wet-group-name-panel">
           <div class="wet-field">
-            <label class="wet-field__label" for="{{rootId}}-name">
-              {{localize "WET.Sheets.Common.Fields.Name"}}
-            </label>
+            <div class="wet-group-name-panel__header">
+              <button
+                class="wet-lock-toggle {{#if isLocked}}is-locked{{else}}is-unlocked{{/if}}"
+                type="button"
+                data-lock-toggle="true"
+                title="{{lockToggleTitle}}"
+                aria-label="{{lockToggleLabel}}"
+                {{#unless canToggleLock}}disabled{{/unless}}
+              >
+                <i class="{{lockToggleIcon}}" aria-hidden="true"></i>
+                <span class="wet-visually-hidden">{{lockToggleLabel}}</span>
+              </button>
+
+              <label class="wet-field__label" for="{{rootId}}-name">
+                {{localize "WET.Sheets.Common.Fields.Name"}}
+              </label>
+            </div>
+
             <input
               id="{{rootId}}-name"
               class="wet-field__input wet-field__input--title"
@@ -141,67 +142,73 @@
       </div>
 
       <section class="wet-sheet__section wet-group-members-panel">
-        <h2 class="wet-sheet__section-title wet-group-members-panel__title">
-          {{localize "WET.Sheets.Group.Sections.Members"}}
-        </h2>
+        <div class="wet-field wet-field--panel">
+          <div
+            class="wet-field__label wet-field__label--section"
+            role="heading"
+            aria-level="2"
+          >
+            {{localize "WET.Sheets.Group.Sections.Members"}}
+          </div>
 
-        <div class="wet-group-members-panel__body">
-          {{#if hasMembers}}
-            <div class="wet-member-list">
-              {{#each members as |member|}}
-                <article class="wet-member-card {{#unless member.exists}}wet-member-card--missing{{/unless}}">
-                  <button
-                    class="wet-member-card__main"
-                    type="button"
-                    data-member-open="true"
-                    data-member-index="{{member.index}}"
-                  >
-                    <span class="wet-member-card__media">
-                      <span class="wet-member-card__thumb">
-                        <img
-                          class="wet-member-card__image"
-                          src="{{member.img}}"
-                          alt="{{member.name}}"
-                        >
-                      </span>
-                    </span>
-
-                    <span class="wet-member-card__content">
-                      <span class="wet-member-card__name">{{member.name}}</span>
-
-                      {{#if member.typeLabel}}
-                        <span class="wet-member-card__meta wet-muted">{{member.typeLabel}}</span>
-                      {{/if}}
-
-                      {{#unless member.exists}}
-                        <span class="wet-member-card__missing wet-muted">
-                          {{localize "WET.Group.Members.MissingActorLabel"}}
+          <div class="wet-group-members-panel__body">
+            {{#if hasMembers}}
+              <div class="wet-member-list">
+                {{#each members as |member|}}
+                  <article class="wet-member-card {{#unless member.exists}}wet-member-card--missing{{/unless}}">
+                    <button
+                      class="wet-member-card__main"
+                      type="button"
+                      data-member-open="true"
+                      data-member-index="{{member.index}}"
+                    >
+                      <span class="wet-member-card__media">
+                        <span class="wet-member-card__thumb">
+                          <img
+                            class="wet-member-card__image"
+                            src="{{member.img}}"
+                            alt="{{member.name}}"
+                          >
                         </span>
-                      {{/unless}}
-                    </span>
-                  </button>
+                      </span>
 
-                  <button
-                    class="wet-inline-icon-button wet-member-card__remove"
-                    type="button"
-                    title="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
-                    aria-label="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
-                    data-member-remove="true"
-                    data-member-index="{{member.index}}"
-                    {{#unless @root.canEdit}}disabled{{/unless}}
-                  >
-                    <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-                  </button>
-                </article>
-              {{/each}}
-            </div>
-          {{else}}
-            <div class="wet-empty-state wet-group-members-panel__empty">
-              <p class="wet-empty-state__text">
-                {{localize "WET.Sheets.Group.Empty.Members"}}
-              </p>
-            </div>
-          {{/if}}
+                      <span class="wet-member-card__content">
+                        <span class="wet-member-card__name">{{member.name}}</span>
+
+                        {{#if member.typeLabel}}
+                          <span class="wet-member-card__meta wet-muted">{{member.typeLabel}}</span>
+                        {{/if}}
+
+                        {{#unless member.exists}}
+                          <span class="wet-member-card__missing wet-muted">
+                            {{localize "WET.Group.Members.MissingActorLabel"}}
+                          </span>
+                        {{/unless}}
+                      </span>
+                    </button>
+
+                    <button
+                      class="wet-inline-icon-button wet-member-card__remove"
+                      type="button"
+                      title="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
+                      aria-label="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
+                      data-member-remove="true"
+                      data-member-index="{{member.index}}"
+                      {{#unless @root.canEdit}}disabled{{/unless}}
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                  </article>
+                {{/each}}
+              </div>
+            {{else}}
+              <div class="wet-empty-state wet-group-members-panel__empty">
+                <p class="wet-empty-state__text">
+                  {{localize "WET.Sheets.Group.Empty.Members"}}
+                </p>
+              </div>
+            {{/if}}
+          </div>
         </div>
       </section>
     </div>

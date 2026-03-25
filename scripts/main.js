@@ -2,7 +2,8 @@ import {
   ACTOR_TYPES,
   LOCALIZATION_PREFIX,
   MODULE_ID,
-  MODULE_TITLE
+  MODULE_TITLE,
+  isModuleActorType
 } from "./core/constants.js";
 import { logger } from "./core/logger.js";
 import { registerGroupActorSheet } from "./apps/group-actor-sheet.js";
@@ -30,6 +31,16 @@ function registerApi() {
   if (!module) return;
   module.api = buildApi();
 }
+
+Hooks.on("preCreateActor", actor => {
+  if (!isModuleActorType(actor.type)) return;
+
+  actor.updateSource({
+    prototypeToken: {
+      actorLink: true
+    }
+  });
+});
 
 Hooks.once("init", () => {
   registerActorDataModels();
