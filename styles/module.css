@@ -123,18 +123,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.55rem;
-  height: 1.55rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  min-width: 1.15rem;
+  min-height: 1.15rem;
   padding: 0;
   border: 1px solid var(--wet-border-color);
-  border-radius: var(--wet-radius-sm);
+  border-radius: 4px;
   background: rgba(0, 0, 0, 0.16);
   cursor: pointer;
   flex: 0 0 auto;
 }
 
 .wet-lock-toggle i {
-  font-size: 0.72rem;
+  font-size: 0.55rem;
+  line-height: 1;
 }
 
 .wet-lock-toggle.is-locked {
