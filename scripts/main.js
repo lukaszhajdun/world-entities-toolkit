@@ -5,6 +5,7 @@ import {
   MODULE_TITLE
 } from "./core/constants.js";
 import { logger } from "./core/logger.js";
+import { registerGroupActorSheet } from "./apps/group-actor-sheet.js";
 import { registerActorDataModels } from "./model/register-models.js";
 import * as settingsApi from "./settings/access.js";
 import { registerSettings } from "./settings/register.js";
@@ -32,6 +33,7 @@ function registerApi() {
 
 Hooks.once("init", () => {
   registerActorDataModels();
+  registerGroupActorSheet();
   logger.info(game.i18n.localize(`${LOCALIZATION_PREFIX}.Log.Init`));
   registerSettings();
 });

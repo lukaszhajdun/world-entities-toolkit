@@ -16,6 +16,44 @@
       "Description": "Opis",
       "Add": "Dodaj",
       "Remove": "Usuń"
+    },
+    "Errors": {
+      "AutoSaveFailed": "Nie udało się zapisać zmian."
+    },
+    "Sheets": {
+      "Common": {
+        "Unnamed": "Nowy byt",
+        "Fields": {
+          "Name": "Nazwa"
+        },
+        "Actions": {
+          "Save": "Zapisz"
+        },
+        "Controls": {
+          "PrototypeToken": "Prototype Token",
+          "PortraitArtwork": "Pokaż grafikę aktora",
+          "TokenArtwork": "Pokaż grafikę tokenu"
+        }
+      },
+      "Group": {
+        "Label": "Grupa (WE)",
+        "Sections": {
+          "Basics": "Podstawy",
+          "Description": "Opis",
+          "Notes": "Notatki"
+        },
+        "Fields": {
+          "Status": "Status",
+          "Location": "Lokalizacja"
+        },
+        "Placeholders": {
+          "Name": "Nazwa grupy",
+          "Status": "np. W podróży",
+          "Location": "np. Północna autostrada",
+          "Description": "Opisz grupę...",
+          "Notes": "Dodaj notatki do tej grupy..."
+        }
+      }
     }
   },
   "TYPES": {

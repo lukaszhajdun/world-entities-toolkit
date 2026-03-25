@@ -16,6 +16,44 @@
       "Description": "Description",
       "Add": "Add",
       "Remove": "Remove"
+    },
+    "Errors": {
+      "AutoSaveFailed": "Failed to save changes."
+    },
+    "Sheets": {
+      "Common": {
+        "Unnamed": "New Entity",
+        "Fields": {
+          "Name": "Name"
+        },
+        "Actions": {
+          "Save": "Save"
+        },
+        "Controls": {
+          "PrototypeToken": "Prototype Token",
+          "PortraitArtwork": "View Character Artwork",
+          "TokenArtwork": "View Token Artwork"
+        }
+      },
+      "Group": {
+        "Label": "Group (WE)",
+        "Sections": {
+          "Basics": "Basics",
+          "Description": "Description",
+          "Notes": "Notes"
+        },
+        "Fields": {
+          "Status": "Status",
+          "Location": "Location"
+        },
+        "Placeholders": {
+          "Name": "Group name",
+          "Status": "e.g. Travelling",
+          "Location": "e.g. Northern Highway",
+          "Description": "Describe the group...",
+          "Notes": "Add notes for this group..."
+        }
+      }
     }
   },
   "TYPES": {
