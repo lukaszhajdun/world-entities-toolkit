@@ -57,6 +57,7 @@
           "Notes": "Notatki"
         },
         "Fields": {
+          "Faction": "Frakcja",
           "Status": "Status",
           "Location": "Lokalizacja",
           "MemberCount": "Członkowie"
@@ -69,6 +70,7 @@
         },
         "Placeholders": {
           "Name": "Nazwa grupy",
+          "Faction": "np. Wilki z autostrady",
           "Status": "np. W podróży",
           "Location": "np. Północna autostrada",
           "Description": "Opisz grupę...",

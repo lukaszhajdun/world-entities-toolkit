@@ -1,11 +1,20 @@
 <form class="wet-sheet wet-group-sheet {{cssClass}}" autocomplete="off">
   <header class="wet-sheet__header wet-group-header">
-    <div class="wet-sheet__portrait wet-group-header__portrait">
-      <img
-        class="wet-sheet__portrait-image"
-        src="{{actor.img}}"
-        alt="{{actor.name}}"
-      >
+    <div class="wet-group-header__aside">
+      <div class="wet-sheet__portrait wet-group-header__portrait">
+        <img
+          class="wet-sheet__portrait-image"
+          src="{{actor.img}}"
+          alt="{{actor.name}}"
+        >
+      </div>
+
+      <div class="wet-group-header__count">
+        <span class="wet-group-header__count-label">
+          {{localize "WET.Sheets.Group.Fields.MemberCount"}}
+        </span>
+        <span class="wet-group-header__count-value">{{membersCount}}</span>
+      </div>
     </div>
 
     <div class="wet-group-header__identity">
@@ -24,30 +33,23 @@
         >
       </div>
 
-      <div class="wet-group-header__meta">
-        <span class="wet-group-header__meta-label">
-          {{localize "WET.Sheets.Group.Fields.MemberCount"}}
-        </span>
-        <span class="wet-group-header__meta-value">{{membersCount}}</span>
+      <div class="wet-field">
+        <label class="wet-field__label" for="{{rootId}}-faction">
+          {{localize "WET.Sheets.Group.Fields.Faction"}}
+        </label>
+        <input
+          id="{{rootId}}-faction"
+          class="wet-field__input"
+          type="text"
+          name="system.details.faction"
+          value="{{system.details.faction}}"
+          placeholder="{{localize "WET.Sheets.Group.Placeholders.Faction"}}"
+          {{#unless editable}}disabled{{/unless}}
+        >
       </div>
     </div>
 
     <div class="wet-group-header__details">
-      <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-status">
-          {{localize "WET.Sheets.Group.Fields.Status"}}
-        </label>
-        <input
-          id="{{rootId}}-status"
-          class="wet-field__input"
-          type="text"
-          name="system.details.status"
-          value="{{system.details.status}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Status"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-
       <div class="wet-field">
         <label class="wet-field__label" for="{{rootId}}-location">
           {{localize "WET.Sheets.Group.Fields.Location"}}
@@ -59,6 +61,21 @@
           name="system.details.location"
           value="{{system.details.location}}"
           placeholder="{{localize "WET.Sheets.Group.Placeholders.Location"}}"
+          {{#unless editable}}disabled{{/unless}}
+        >
+      </div>
+
+      <div class="wet-field">
+        <label class="wet-field__label" for="{{rootId}}-status">
+          {{localize "WET.Sheets.Group.Fields.Status"}}
+        </label>
+        <input
+          id="{{rootId}}-status"
+          class="wet-field__input"
+          type="text"
+          name="system.details.status"
+          value="{{system.details.status}}"
+          placeholder="{{localize "WET.Sheets.Group.Placeholders.Status"}}"
           {{#unless editable}}disabled{{/unless}}
         >
       </div>
@@ -106,11 +123,15 @@
               data-member-open="true"
               data-member-index="{{member.index}}"
             >
-              <img
-                class="wet-member-card__image"
-                src="{{member.img}}"
-                alt="{{member.name}}"
-              >
+              <span class="wet-member-card__media">
+                <span class="wet-member-card__thumb">
+                  <img
+                    class="wet-member-card__image"
+                    src="{{member.img}}"
+                    alt="{{member.name}}"
+                  >
+                </span>
+              </span>
 
               <span class="wet-member-card__content">
                 <span class="wet-member-card__name">{{member.name}}</span>

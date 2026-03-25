@@ -19,6 +19,7 @@ export class GroupActorData extends foundry.abstract.TypeDataModel {
       }),
       members: createActorReferenceArrayField(),
       details: new SchemaField({
+        faction: createStringField(),
         tags: createStringArrayField(),
         status: createStringField(),
         location: createStringField()

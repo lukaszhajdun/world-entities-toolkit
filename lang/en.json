@@ -57,6 +57,7 @@
           "Notes": "Notes"
         },
         "Fields": {
+          "Faction": "Faction",
           "Status": "Status",
           "Location": "Location",
           "MemberCount": "Members"
@@ -69,6 +70,7 @@
         },
         "Placeholders": {
           "Name": "Group name",
+          "Faction": "e.g. Highway Wolves",
           "Status": "e.g. Travelling",
           "Location": "e.g. Northern Highway",
           "Description": "Describe the group...",
