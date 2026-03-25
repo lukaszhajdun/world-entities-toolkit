@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <div class="wet-group-header__identity">
+    <div class="wet-group-header__form-grid">
       <div class="wet-field">
         <label class="wet-field__label" for="{{rootId}}-name">
           {{localize "WET.Sheets.Common.Fields.Name"}}
@@ -34,23 +34,6 @@
       </div>
 
       <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-faction">
-          {{localize "WET.Sheets.Group.Fields.Faction"}}
-        </label>
-        <input
-          id="{{rootId}}-faction"
-          class="wet-field__input"
-          type="text"
-          name="system.details.faction"
-          value="{{system.details.faction}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Faction"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-    </div>
-
-    <div class="wet-group-header__details">
-      <div class="wet-field">
         <label class="wet-field__label" for="{{rootId}}-location">
           {{localize "WET.Sheets.Group.Fields.Location"}}
         </label>
@@ -61,6 +44,21 @@
           name="system.details.location"
           value="{{system.details.location}}"
           placeholder="{{localize "WET.Sheets.Group.Placeholders.Location"}}"
+          {{#unless editable}}disabled{{/unless}}
+        >
+      </div>
+
+      <div class="wet-field">
+        <label class="wet-field__label" for="{{rootId}}-faction">
+          {{localize "WET.Sheets.Group.Fields.Faction"}}
+        </label>
+        <input
+          id="{{rootId}}-faction"
+          class="wet-field__input"
+          type="text"
+          name="system.details.faction"
+          value="{{system.details.faction}}"
+          placeholder="{{localize "WET.Sheets.Group.Placeholders.Faction"}}"
           {{#unless editable}}disabled{{/unless}}
         >
       </div>
