@@ -1,205 +1,185 @@
 <form class="wet-sheet wet-group-sheet {{cssClass}}" autocomplete="off">
-  <header class="wet-sheet__header wet-group-header">
-    <div class="wet-group-header__aside">
-      <div class="wet-sheet__portrait wet-group-header__portrait">
-        <img
-          class="wet-sheet__portrait-image"
-          src="{{actor.img}}"
-          alt="{{actor.name}}"
-        >
-      </div>
-
-      <div class="wet-group-header__count">
-        <span class="wet-group-header__count-label">
-          {{localize "WET.Sheets.Group.Fields.MemberCount"}}
-        </span>
-        <span class="wet-group-header__count-value">{{membersCount}}</span>
-      </div>
-    </div>
-
-    <div class="wet-group-header__form-grid">
-      <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-name">
-          {{localize "WET.Sheets.Common.Fields.Name"}}
-        </label>
-        <input
-          id="{{rootId}}-name"
-          class="wet-field__input wet-field__input--title"
-          type="text"
-          name="name"
-          value="{{actor.name}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Name"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-
-      <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-location">
-          {{localize "WET.Sheets.Group.Fields.Location"}}
-        </label>
-        <input
-          id="{{rootId}}-location"
-          class="wet-field__input"
-          type="text"
-          name="system.details.location"
-          value="{{system.details.location}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Location"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-
-      <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-faction">
-          {{localize "WET.Sheets.Group.Fields.Faction"}}
-        </label>
-        <input
-          id="{{rootId}}-faction"
-          class="wet-field__input"
-          type="text"
-          name="system.details.faction"
-          value="{{system.details.faction}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Faction"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-
-      <div class="wet-field">
-        <label class="wet-field__label" for="{{rootId}}-status">
-          {{localize "WET.Sheets.Group.Fields.Status"}}
-        </label>
-        <input
-          id="{{rootId}}-status"
-          class="wet-field__input"
-          type="text"
-          name="system.details.status"
-          value="{{system.details.status}}"
-          placeholder="{{localize "WET.Sheets.Group.Placeholders.Status"}}"
-          {{#unless editable}}disabled{{/unless}}
-        >
-      </div>
-    </div>
-  </header>
-
-  <nav class="wet-tabs" aria-label="{{localize "WET.Sheets.Group.Tabs.AriaLabel"}}">
-    <button
-      class="wet-tab-button {{#if isMembersTab}}is-active{{/if}}"
-      type="button"
-      data-wet-tab="members"
-      aria-selected="{{#if isMembersTab}}true{{else}}false{{/if}}"
-    >
-      {{localize "WET.Sheets.Group.Tabs.Members"}}
-    </button>
-
-    <button
-      class="wet-tab-button {{#if isInfoTab}}is-active{{/if}}"
-      type="button"
-      data-wet-tab="info"
-      aria-selected="{{#if isInfoTab}}true{{else}}false{{/if}}"
-    >
-      {{localize "WET.Sheets.Group.Tabs.Info"}}
-    </button>
-  </nav>
-
-  <section
-    class="wet-sheet__section wet-tab-panel wet-group-members-panel {{#if isMembersTab}}is-active{{/if}}"
-    data-wet-tab-panel="members"
-    {{#unless isMembersTab}}hidden{{/unless}}
-  >
-    <div class="wet-sheet__section-header wet-sheet__section-header--compact">
-      <h2 class="wet-sheet__section-title">
-        {{localize "WET.Sheets.Group.Sections.Members"}}
-      </h2>
-    </div>
-
-    {{#if hasMembers}}
-      <div class="wet-member-list">
-        {{#each members as |member|}}
-          <article class="wet-member-card {{#unless member.exists}}wet-member-card--missing{{/unless}}">
-            <button
-              class="wet-member-card__main"
-              type="button"
-              data-member-open="true"
-              data-member-index="{{member.index}}"
+  <div class="wet-group-shell">
+    <div class="wet-group-shell__grid">
+      <div class="wet-group-shell__left">
+        <section class="wet-sheet__section wet-group-name-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-name">
+              {{localize "WET.Sheets.Common.Fields.Name"}}
+            </label>
+            <input
+              id="{{rootId}}-name"
+              class="wet-field__input wet-field__input--title"
+              type="text"
+              name="name"
+              value="{{actor.name}}"
+              placeholder="{{localize "WET.Sheets.Group.Placeholders.Name"}}"
+              {{#unless editable}}disabled{{/unless}}
             >
-              <span class="wet-member-card__media">
-                <span class="wet-member-card__thumb">
-                  <img
-                    class="wet-member-card__image"
-                    src="{{member.img}}"
-                    alt="{{member.name}}"
-                  >
+          </div>
+        </section>
+
+        <section class="wet-sheet__section wet-group-identity-panel">
+          <div class="wet-group-identity-grid">
+            <div class="wet-group-identity-grid__portrait-slot">
+              <div class="wet-sheet__portrait wet-group-header__portrait">
+                <img
+                  class="wet-sheet__portrait-image"
+                  src="{{actor.img}}"
+                  alt="{{actor.name}}"
+                >
+              </div>
+            </div>
+
+            <div class="wet-field wet-group-identity-grid__faction">
+              <label class="wet-field__label" for="{{rootId}}-faction">
+                {{localize "WET.Sheets.Group.Fields.Faction"}}
+              </label>
+              <input
+                id="{{rootId}}-faction"
+                class="wet-field__input"
+                type="text"
+                name="system.details.faction"
+                value="{{system.details.faction}}"
+                placeholder="{{localize "WET.Sheets.Group.Placeholders.Faction"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+
+            <div class="wet-field wet-group-identity-grid__location">
+              <label class="wet-field__label" for="{{rootId}}-location">
+                {{localize "WET.Sheets.Group.Fields.Location"}}
+              </label>
+              <input
+                id="{{rootId}}-location"
+                class="wet-field__input"
+                type="text"
+                name="system.details.location"
+                value="{{system.details.location}}"
+                placeholder="{{localize "WET.Sheets.Group.Placeholders.Location"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+
+            <div class="wet-group-identity-grid__counter-slot">
+              <div class="wet-group-header__count">
+                <span class="wet-group-header__count-label">
+                  {{localize "WET.Sheets.Group.Fields.MemberCount"}}
                 </span>
-              </span>
+                <span class="wet-group-header__count-value">{{membersCount}}</span>
+              </div>
+            </div>
 
-              <span class="wet-member-card__content">
-                <span class="wet-member-card__name">{{member.name}}</span>
+            <div class="wet-field wet-group-identity-grid__status">
+              <label class="wet-field__label" for="{{rootId}}-status">
+                {{localize "WET.Sheets.Group.Fields.Status"}}
+              </label>
+              <input
+                id="{{rootId}}-status"
+                class="wet-field__input"
+                type="text"
+                name="system.details.status"
+                value="{{system.details.status}}"
+                placeholder="{{localize "WET.Sheets.Group.Placeholders.Status"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+          </div>
+        </section>
 
-                {{#if member.typeLabel}}
-                  <span class="wet-member-card__meta wet-muted">{{member.typeLabel}}</span>
-                {{/if}}
+        <section class="wet-sheet__section wet-group-text-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-description">
+              {{localize "WET.Sheets.Group.Sections.Description"}}
+            </label>
+            <textarea
+              id="{{rootId}}-description"
+              class="wet-field__textarea"
+              name="system.summary.description"
+              placeholder="{{localize "WET.Sheets.Group.Placeholders.Description"}}"
+              rows="10"
+              {{#unless editable}}disabled{{/unless}}
+            >{{system.summary.description}}</textarea>
+          </div>
 
-                {{#unless member.exists}}
-                  <span class="wet-member-card__missing wet-muted">
-                    {{localize "WET.Group.Members.MissingActorLabel"}}
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-notes">
+              {{localize "WET.Sheets.Group.Sections.Notes"}}
+            </label>
+            <textarea
+              id="{{rootId}}-notes"
+              class="wet-field__textarea"
+              name="system.summary.notes"
+              placeholder="{{localize "WET.Sheets.Group.Placeholders.Notes"}}"
+              rows="10"
+              {{#unless editable}}disabled{{/unless}}
+            >{{system.summary.notes}}</textarea>
+          </div>
+        </section>
+      </div>
+
+      <section class="wet-sheet__section wet-group-members-panel">
+        <h2 class="wet-sheet__section-title wet-group-members-panel__title">
+          {{localize "WET.Sheets.Group.Sections.Members"}}
+        </h2>
+
+        {{#if hasMembers}}
+          <div class="wet-member-list">
+            {{#each members as |member|}}
+              <article class="wet-member-card {{#unless member.exists}}wet-member-card--missing{{/unless}}">
+                <button
+                  class="wet-member-card__main"
+                  type="button"
+                  data-member-open="true"
+                  data-member-index="{{member.index}}"
+                >
+                  <span class="wet-member-card__media">
+                    <span class="wet-member-card__thumb">
+                      <img
+                        class="wet-member-card__image"
+                        src="{{member.img}}"
+                        alt="{{member.name}}"
+                      >
+                    </span>
                   </span>
-                {{/unless}}
-              </span>
-            </button>
 
-            <button
-              class="wet-inline-icon-button wet-member-card__remove"
-              type="button"
-              title="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
-              aria-label="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
-              data-member-remove="true"
-              data-member-index="{{member.index}}"
-              {{#unless @root.editable}}disabled{{/unless}}
-            >
-              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-            </button>
-          </article>
-        {{/each}}
-      </div>
-    {{else}}
-      <div class="wet-empty-state">
-        <p class="wet-empty-state__text">
-          {{localize "WET.Sheets.Group.Empty.Members"}}
-        </p>
-      </div>
-    {{/if}}
-  </section>
+                  <span class="wet-member-card__content">
+                    <span class="wet-member-card__name">{{member.name}}</span>
 
-  <section
-    class="wet-sheet__section wet-tab-panel {{#if isInfoTab}}is-active{{/if}}"
-    data-wet-tab-panel="info"
-    {{#unless isInfoTab}}hidden{{/unless}}
-  >
-    <div class="wet-field">
-      <label class="wet-field__label" for="{{rootId}}-description">
-        {{localize "WET.Sheets.Group.Sections.Description"}}
-      </label>
-      <textarea
-        id="{{rootId}}-description"
-        class="wet-field__textarea"
-        name="system.summary.description"
-        placeholder="{{localize "WET.Sheets.Group.Placeholders.Description"}}"
-        rows="8"
-        {{#unless editable}}disabled{{/unless}}
-      >{{system.summary.description}}</textarea>
+                    {{#if member.typeLabel}}
+                      <span class="wet-member-card__meta wet-muted">{{member.typeLabel}}</span>
+                    {{/if}}
+
+                    {{#unless member.exists}}
+                      <span class="wet-member-card__missing wet-muted">
+                        {{localize "WET.Group.Members.MissingActorLabel"}}
+                      </span>
+                    {{/unless}}
+                  </span>
+                </button>
+
+                <button
+                  class="wet-inline-icon-button wet-member-card__remove"
+                  type="button"
+                  title="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
+                  aria-label="{{localize "WET.Sheets.Group.Actions.RemoveMember"}}"
+                  data-member-remove="true"
+                  data-member-index="{{member.index}}"
+                  {{#unless @root.editable}}disabled{{/unless}}
+                >
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+              </article>
+            {{/each}}
+          </div>
+        {{else}}
+          <div class="wet-empty-state">
+            <p class="wet-empty-state__text">
+              {{localize "WET.Sheets.Group.Empty.Members"}}
+            </p>
+          </div>
+        {{/if}}
+      </section>
     </div>
-
-    <div class="wet-field">
-      <label class="wet-field__label" for="{{rootId}}-notes">
-        {{localize "WET.Sheets.Group.Sections.Notes"}}
-      </label>
-      <textarea
-        id="{{rootId}}-notes"
-        class="wet-field__textarea"
-        name="system.summary.notes"
-        placeholder="{{localize "WET.Sheets.Group.Placeholders.Notes"}}"
-        rows="10"
-        {{#unless editable}}disabled{{/unless}}
-      >{{system.summary.notes}}</textarea>
-    </div>
-  </section>
+  </div>
 </form>
