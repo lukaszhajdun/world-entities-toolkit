@@ -43,13 +43,14 @@
   align-items: center;
   justify-content: center;
   gap: var(--wet-space-1);
-  min-width: 1.75rem;
-  min-height: 1.75rem;
-  padding: 0 var(--wet-space-2);
+  min-width: 1.9rem;
+  min-height: 1.9rem;
+  padding: 0;
   border: 1px solid var(--wet-border-color);
   border-radius: var(--wet-radius-sm);
   background: transparent;
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .wet-muted {
@@ -59,51 +60,127 @@
 .wet-sheet {
   display: flex;
   flex-direction: column;
-  gap: var(--wet-space-4);
+  gap: var(--wet-space-3);
   padding: var(--wet-space-3);
 }
 
 .wet-sheet__header {
   display: grid;
-  grid-template-columns: 96px 1fr;
   gap: var(--wet-space-3);
+}
+
+.wet-group-header {
+  grid-template-columns: 72px minmax(0, 1fr) minmax(260px, 320px);
   align-items: start;
+  padding: var(--wet-space-3);
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-md);
+  background: var(--wet-panel-bg);
 }
 
 .wet-sheet__portrait {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
 }
 
-.wet-sheet__portrait-image {
-  width: 96px;
-  height: 96px;
-  object-fit: cover;
+.wet-group-header__portrait {
+  width: 72px;
+  height: 72px;
+  overflow: hidden;
   border: 1px solid var(--wet-border-color);
   border-radius: var(--wet-radius-md);
+  background: rgba(0, 0, 0, 0.18);
 }
 
-.wet-sheet__header-fields {
+.wet-sheet__portrait-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 0;
+}
+
+.wet-group-header__identity {
   display: flex;
   flex-direction: column;
   gap: var(--wet-space-2);
+  min-width: 0;
 }
 
-.wet-sheet__meta {
+.wet-group-header__details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--wet-space-2);
+  min-width: 0;
+}
+
+.wet-group-header__meta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--wet-space-2);
+  min-height: 1.5rem;
+}
+
+.wet-group-header__meta-label {
+  font-size: 0.8125rem;
+  color: var(--wet-muted-text);
+}
+
+.wet-group-header__meta-value {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.wet-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: var(--wet-space-2);
 }
 
+.wet-tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.1rem;
+  padding: 0 var(--wet-space-3);
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-sm);
+  background: rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+
+.wet-tab-button.is-active {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.wet-tab-panel[hidden] {
+  display: none !important;
+}
+
 .wet-sheet__section {
   display: flex;
   flex-direction: column;
-  gap: var(--wet-space-2);
+  gap: var(--wet-space-3);
   padding: var(--wet-space-3);
   border: 1px solid var(--wet-border-color);
   border-radius: var(--wet-radius-md);
   background: var(--wet-panel-bg);
+}
+
+.wet-group-members-panel {
+  min-height: 24rem;
+}
+
+.wet-sheet__section-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wet-space-1);
+}
+
+.wet-sheet__section-header--compact {
+  gap: 0;
 }
 
 .wet-sheet__section-title {
@@ -124,6 +201,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--wet-space-1);
+  min-width: 0;
 }
 
 .wet-field__label {
@@ -145,7 +223,7 @@
 }
 
 .wet-field__input--title {
-  min-height: 2.5rem;
+  min-height: 2.55rem;
   font-size: 1.35rem;
   font-weight: 700;
 }
@@ -156,39 +234,116 @@
   resize: vertical;
 }
 
-.wet-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  padding: 0 var(--wet-space-2);
-  border: 1px solid var(--wet-border-color);
-  border-radius: 999px;
-  font-size: 0.8125rem;
+.wet-empty-state {
+  padding: var(--wet-space-3);
+  border: 1px dashed var(--wet-border-color);
+  border-radius: var(--wet-radius-md);
+}
+
+.wet-empty-state__text {
+  margin: 0;
   color: var(--wet-muted-text);
 }
 
-.wet-sheet__footer {
+.wet-member-list {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  gap: var(--wet-space-2);
 }
 
-.wet-button {
-  display: inline-flex;
-  align-items: center;
+.wet-member-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: var(--wet-space-2);
-  min-height: 2.25rem;
-  padding: 0 var(--wet-space-3);
+  align-items: center;
+  min-width: 0;
+  padding: var(--wet-space-2);
   border: 1px solid var(--wet-border-color);
-  border-radius: var(--wet-radius-sm);
+  border-radius: var(--wet-radius-md);
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.wet-member-card--missing {
+  opacity: 0.85;
+}
+
+.wet-member-card__main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--wet-space-2);
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
   cursor: pointer;
 }
 
+.wet-member-card__image {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-sm);
+}
+
+.wet-member-card__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wet-member-card__name {
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wet-member-card__meta,
+.wet-member-card__missing {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wet-member-card__remove {
+  align-self: center;
+}
+
+@media (max-width: 820px) {
+  .wet-group-header {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .wet-group-header__details {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
-  .wet-sheet__header {
+  .wet-group-header {
     grid-template-columns: 1fr;
   }
 
-  .wet-grid--two {
+  .wet-group-header__portrait {
+    justify-self: start;
+  }
+
+  .wet-group-header__details {
+    grid-column: auto;
     grid-template-columns: 1fr;
+  }
+
+  .wet-member-card {
+    grid-template-columns: 1fr;
+  }
+
+  .wet-member-card__remove {
+    justify-self: end;
   }
 }

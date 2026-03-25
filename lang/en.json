@@ -20,6 +20,15 @@
     "Errors": {
       "AutoSaveFailed": "Failed to save changes."
     },
+    "Group": {
+      "Members": {
+        "UnknownName": "Unknown Actor",
+        "MissingActorLabel": "Actor not found",
+        "Notifications": {
+          "MissingActor": "The linked actor could not be found."
+        }
+      }
+    },
     "Sheets": {
       "Common": {
         "Unnamed": "New Entity",
@@ -37,14 +46,26 @@
       },
       "Group": {
         "Label": "Group (WE)",
+        "Tabs": {
+          "AriaLabel": "Group sheet tabs",
+          "Members": "Members",
+          "Info": "Info"
+        },
         "Sections": {
-          "Basics": "Basics",
+          "Members": "Members",
           "Description": "Description",
           "Notes": "Notes"
         },
         "Fields": {
           "Status": "Status",
-          "Location": "Location"
+          "Location": "Location",
+          "MemberCount": "Members"
+        },
+        "Actions": {
+          "RemoveMember": "Remove member"
+        },
+        "Empty": {
+          "Members": "No members have been added yet."
         },
         "Placeholders": {
           "Name": "Group name",

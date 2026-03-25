@@ -20,6 +20,15 @@
     "Errors": {
       "AutoSaveFailed": "Nie udało się zapisać zmian."
     },
+    "Group": {
+      "Members": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora",
+        "Notifications": {
+          "MissingActor": "Nie udało się odnaleźć powiązanego aktora."
+        }
+      }
+    },
     "Sheets": {
       "Common": {
         "Unnamed": "Nowy byt",
@@ -37,14 +46,26 @@
       },
       "Group": {
         "Label": "Grupa (WE)",
+        "Tabs": {
+          "AriaLabel": "Zakładki karty grupy",
+          "Members": "Członkowie",
+          "Info": "Informacje"
+        },
         "Sections": {
-          "Basics": "Podstawy",
+          "Members": "Członkowie",
           "Description": "Opis",
           "Notes": "Notatki"
         },
         "Fields": {
           "Status": "Status",
-          "Location": "Lokalizacja"
+          "Location": "Lokalizacja",
+          "MemberCount": "Członkowie"
+        },
+        "Actions": {
+          "RemoveMember": "Usuń członka"
+        },
+        "Empty": {
+          "Members": "Nie dodano jeszcze żadnych członków."
         },
         "Placeholders": {
           "Name": "Nazwa grupy",
