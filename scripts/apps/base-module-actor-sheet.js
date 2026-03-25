@@ -1,4 +1,5 @@
 import {
+  ACTOR_FLAGS,
   CSS_CLASSES,
   LOCALIZATION_PREFIX,
   MODULE_ID
@@ -54,8 +55,25 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     return game.i18n.localize(`${LOCALIZATION_PREFIX}.Sheets.Common.Unnamed`);
   }
 
+  get isSheetLocked() {
+    const explicitLockState = this.document?.getFlag(MODULE_ID, ACTOR_FLAGS.EDIT_LOCKED);
+    if (typeof explicitLockState === "boolean") return explicitLockState;
+    return false;
+  }
+
+  get canEditDocument() {
+    return this.isEditable && !this.isSheetLocked;
+  }
+
+  get canToggleLock() {
+    return this.isEditable;
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
+    const lockToggleKey = this.isSheetLocked
+      ? `${LOCALIZATION_PREFIX}.Sheets.Common.Actions.UnlockEditing`
+      : `${LOCALIZATION_PREFIX}.Sheets.Common.Actions.LockEditing`;
 
     return foundry.utils.mergeObject(
       context,
@@ -66,7 +84,13 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         actor: this.actor,
         system: this.actor.system,
         owner: this.actor.isOwner,
-        editable: this.isEditable,
+        editable: this.canEditDocument,
+        canEdit: this.canEditDocument,
+        canToggleLock: this.canToggleLock,
+        isLocked: this.isSheetLocked,
+        lockToggleLabel: game.i18n.localize(lockToggleKey),
+        lockToggleTitle: game.i18n.localize(lockToggleKey),
+        lockToggleIcon: this.isSheetLocked ? "fa-solid fa-lock" : "fa-solid fa-lock-open",
         title: this.title
       },
       { inplace: false }
@@ -97,11 +121,37 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    this._attachCommonListeners();
     this._attachAutoSaveListeners();
   }
 
+  _attachCommonListeners() {
+    const form = this.form;
+    if (!form) return;
+
+    const lockToggle = form.querySelector("[data-lock-toggle]");
+    if (lockToggle) {
+      lockToggle.addEventListener("click", this._onToggleEditLock.bind(this));
+    }
+  }
+
+  async _onToggleEditLock(event) {
+    event.preventDefault();
+
+    if (!this.canToggleLock) return;
+
+    const nextLockedState = !this.isSheetLocked;
+
+    try {
+      await this.document.setFlag(MODULE_ID, ACTOR_FLAGS.EDIT_LOCKED, nextLockedState);
+    } catch (error) {
+      logger.error("Failed to toggle edit lock state.", error);
+      ui.notifications?.error(game.i18n.localize(`${LOCALIZATION_PREFIX}.Errors.EditLockToggleFailed`));
+    }
+  }
+
   _attachAutoSaveListeners() {
-    if (!this.isEditable) return;
+    if (!this.canEditDocument) return;
 
     const form = this.form;
     if (!form) return;

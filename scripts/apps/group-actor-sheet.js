@@ -25,7 +25,7 @@ export class GroupActorSheet extends BaseModuleActorSheet {
 
     options.position = foundry.utils.mergeObject(
       options.position ?? {},
-      { width: 820 },
+      { width: 760 },
       { inplace: false }
     );
 
@@ -51,21 +51,15 @@ export class GroupActorSheet extends BaseModuleActorSheet {
   }
 
   async _prepareContext(options) {
-    this._activeTab ??= "members";
-
     const context = await super._prepareContext(options);
     const members = await prepareGroupMembers(this.actor);
 
     return foundry.utils.mergeObject(
       context,
       {
-        actorTypeLabel: game.i18n.localize("TYPES.Actor.world-entities-toolkit.group"),
         members,
         membersCount: members.length,
-        hasMembers: members.length > 0,
-        activeTab: this._activeTab,
-        isMembersTab: this._activeTab === "members",
-        isInfoTab: this._activeTab === "info"
+        hasMembers: members.length > 0
       },
       { inplace: false }
     );
@@ -73,18 +67,8 @@ export class GroupActorSheet extends BaseModuleActorSheet {
 
   async _onRender(context, options) {
     await super._onRender(context, options);
-    this._attachTabListeners();
     this._attachMemberListeners();
-    this._applyActiveTab();
-  }
-
-  _attachTabListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const button of form.querySelectorAll("[data-wet-tab]")) {
-      button.addEventListener("click", this._onTabClick.bind(this));
-    }
+    this._attachPortraitListeners();
   }
 
   _attachMemberListeners() {
@@ -100,34 +84,20 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     }
   }
 
-  _onTabClick(event) {
-    event.preventDefault();
-
-    const button = event.currentTarget;
-    const tabId = button?.dataset?.wetTab;
-    if (!tabId) return;
-
-    this._activeTab = tabId;
-    this._applyActiveTab();
-  }
-
-  _applyActiveTab() {
+  _attachPortraitListeners() {
     const form = this.form;
     if (!form) return;
 
-    const activeTab = this._activeTab ?? "members";
-
-    for (const button of form.querySelectorAll("[data-wet-tab]")) {
-      const isActive = button.dataset.wetTab === activeTab;
-      button.classList.toggle("is-active", isActive);
-      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    const portraitButton = form.querySelector("[data-edit-image]");
+    if (portraitButton) {
+      portraitButton.addEventListener("click", this._onPortraitEdit.bind(this));
     }
+  }
 
-    for (const panel of form.querySelectorAll("[data-wet-tab-panel]")) {
-      const isActive = panel.dataset.wetTabPanel === activeTab;
-      panel.hidden = !isActive;
-      panel.classList.toggle("is-active", isActive);
-    }
+  async _onPortraitEdit(event) {
+    event.preventDefault();
+    if (!this.canEditDocument) return;
+    await this._onEditImage(event);
   }
 
   async _onMemberOpen(event) {
@@ -149,7 +119,7 @@ export class GroupActorSheet extends BaseModuleActorSheet {
   async _onMemberRemove(event) {
     event.preventDefault();
 
-    if (!this.isEditable) return;
+    if (!this.canEditDocument) return;
 
     const button = event.currentTarget;
     const index = Number(button.dataset.memberIndex);

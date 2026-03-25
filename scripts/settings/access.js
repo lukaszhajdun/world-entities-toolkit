@@ -1,4 +1,6 @@
-import { MODULE_ID } from "../core/constants.js";
+import {
+  MODULE_ID
+} from "../core/constants.js";
 
 export function hasSetting(key) {
   return game?.settings?.settings?.has(`${MODULE_ID}.${key}`) ?? false;

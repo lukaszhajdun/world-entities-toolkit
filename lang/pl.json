@@ -18,7 +18,8 @@
       "Remove": "Usuń"
     },
     "Errors": {
-      "AutoSaveFailed": "Nie udało się zapisać zmian."
+      "AutoSaveFailed": "Nie udało się zapisać zmian.",
+      "EditLockToggleFailed": "Nie udało się zmienić stanu blokady edycji."
     },
     "Group": {
       "Members": {
@@ -36,7 +37,10 @@
           "Name": "Nazwa"
         },
         "Actions": {
-          "Save": "Zapisz"
+          "Save": "Zapisz",
+          "LockEditing": "Zablokuj edycję",
+          "UnlockEditing": "Odblokuj edycję",
+          "EditPortrait": "Zmień portret"
         },
         "Controls": {
           "PrototypeToken": "Prototype Token",
@@ -46,11 +50,6 @@
       },
       "Group": {
         "Label": "Grupa (WE)",
-        "Tabs": {
-          "AriaLabel": "Zakładki karty grupy",
-          "Members": "Członkowie",
-          "Info": "Informacje"
-        },
         "Sections": {
           "Members": "Członkowie",
           "Description": "Opis",

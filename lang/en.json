@@ -18,7 +18,8 @@
       "Remove": "Remove"
     },
     "Errors": {
-      "AutoSaveFailed": "Failed to save changes."
+      "AutoSaveFailed": "Failed to save changes.",
+      "EditLockToggleFailed": "Failed to change the edit lock state."
     },
     "Group": {
       "Members": {
@@ -36,7 +37,10 @@
           "Name": "Name"
         },
         "Actions": {
-          "Save": "Save"
+          "Save": "Save",
+          "LockEditing": "Lock editing",
+          "UnlockEditing": "Unlock editing",
+          "EditPortrait": "Change portrait"
         },
         "Controls": {
           "PrototypeToken": "Prototype Token",
@@ -46,11 +50,6 @@
       },
       "Group": {
         "Label": "Group (WE)",
-        "Tabs": {
-          "AriaLabel": "Group sheet tabs",
-          "Members": "Members",
-          "Info": "Info"
-        },
         "Sections": {
           "Members": "Members",
           "Description": "Description",
