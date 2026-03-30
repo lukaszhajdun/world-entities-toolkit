@@ -11,7 +11,7 @@ export function isActorReference(reference) {
 }
 
 export function createActorReference(actor) {
-  if (!(actor instanceof Actor)) {
+  if (!actor || actor.documentName !== "Actor") {
     throw new Error("createActorReference expected an Actor document.");
   }
 
@@ -24,13 +24,22 @@ export function createActorReference(actor) {
   };
 }
 
+export function isSameActorReference(left, right) {
+  if (!isActorReference(left) || !isActorReference(right)) return false;
+
+  if (left.uuid && right.uuid) return left.uuid === right.uuid;
+  if (left.id && right.id) return left.id === right.id;
+
+  return false;
+}
+
 export async function resolveActorReference(reference) {
   if (!isActorReference(reference)) return null;
 
   if (reference.uuid) {
     try {
       const document = await fromUuid(reference.uuid);
-      if (document instanceof Actor) return document;
+      if (document?.documentName === "Actor") return document;
     } catch (_error) {
       // Fallback below.
     }

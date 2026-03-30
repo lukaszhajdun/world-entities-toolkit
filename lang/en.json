@@ -26,6 +26,11 @@
         "UnknownName": "Unknown Actor",
         "MissingActorLabel": "Actor not found",
         "Notifications": {
+          "Added": "Actor added to the group.",
+          "AlreadyAdded": "This actor is already in the group.",
+          "CannotAddSelf": "You cannot add the group actor to itself.",
+          "DropLocked": "Unlock editing before adding members.",
+          "InvalidDrop": "Only actor documents can be dropped here.",
           "MissingActor": "The linked actor could not be found."
         }
       }
@@ -65,7 +70,7 @@
           "RemoveMember": "Remove member"
         },
         "Empty": {
-          "Members": "No members have been added yet."
+          "Members": "No members have been added yet. Drag actors here."
         },
         "Placeholders": {
           "Name": "Group name",

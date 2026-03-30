@@ -151,7 +151,10 @@
             {{localize "WET.Sheets.Group.Sections.Members"}}
           </div>
 
-          <div class="wet-group-members-panel__body">
+          <div
+            class="wet-group-members-panel__body wet-drop-zone"
+            data-drop-zone="members"
+          >
             {{#if hasMembers}}
               <div class="wet-member-list">
                 {{#each members as |member|}}

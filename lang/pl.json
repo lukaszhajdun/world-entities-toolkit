@@ -26,6 +26,11 @@
         "UnknownName": "Nieznany aktor",
         "MissingActorLabel": "Nie znaleziono aktora",
         "Notifications": {
+          "Added": "Aktor został dodany do grupy.",
+          "AlreadyAdded": "Ten aktor jest już w grupie.",
+          "CannotAddSelf": "Nie możesz dodać aktora grupy do samego siebie.",
+          "DropLocked": "Odblokuj edycję, aby dodawać członków.",
+          "InvalidDrop": "W to miejsce można upuszczać tylko aktorów.",
           "MissingActor": "Nie udało się odnaleźć powiązanego aktora."
         }
       }
@@ -65,7 +70,7 @@
           "RemoveMember": "Usuń członka"
         },
         "Empty": {
-          "Members": "Nie dodano jeszcze żadnych członków."
+          "Members": "Nie dodano jeszcze żadnych członków. Przeciągnij tutaj aktorów."
         },
         "Placeholders": {
           "Name": "Nazwa grupy",

@@ -10,6 +10,7 @@
   --wet-border-color: rgba(255, 255, 255, 0.16);
   --wet-muted-text: rgba(255, 255, 255, 0.7);
   --wet-panel-bg: rgba(0, 0, 0, 0.12);
+  --wet-drop-bg: rgba(255, 255, 255, 0.04);
 }
 
 .world-entities-toolkit,
@@ -168,6 +169,7 @@
   flex-direction: column;
   min-width: 0;
   width: 100%;
+  min-height: 18rem;
 }
 
 .wet-group-members-panel__empty {
@@ -175,6 +177,17 @@
   width: 100%;
   min-height: 100%;
   align-self: stretch;
+}
+
+.wet-drop-zone {
+  border-radius: var(--wet-radius-sm);
+  transition: background 120ms ease, outline-color 120ms ease;
+}
+
+.wet-drop-zone.is-dragover {
+  background: var(--wet-drop-bg);
+  outline: 1px dashed var(--wet-border-color);
+  outline-offset: 0;
 }
 
 .wet-group-identity-grid {
