@@ -17,6 +17,38 @@
       "DefaultLockArtworkRotation": {
         "Name": "Default Lock Artwork Rotation for new module actors",
         "Hint": "If enabled, newly created module actors will have Lock Artwork Rotation enabled in Prototype Token."
+      },
+      "ActorTypes": {
+        "Group": {
+          "DefaultLinkActorData": {
+            "Name": "Group Actor: Default Link Actor Data",
+            "Hint": "If enabled, newly created Group actors will have Link Actor Data enabled in Prototype Token."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Group Actor: Default Lock Artwork Rotation",
+            "Hint": "If enabled, newly created Group actors will have Lock Artwork Rotation enabled in Prototype Token."
+          }
+        },
+        "Vehicle": {
+          "DefaultLinkActorData": {
+            "Name": "Vehicle Actor: Default Link Actor Data",
+            "Hint": "If enabled, newly created Vehicle actors will have Link Actor Data enabled in Prototype Token."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Vehicle Actor: Default Lock Artwork Rotation",
+            "Hint": "If enabled, newly created Vehicle actors will have Lock Artwork Rotation enabled in Prototype Token."
+          }
+        },
+        "Faction": {
+          "DefaultLinkActorData": {
+            "Name": "Faction Actor: Default Link Actor Data",
+            "Hint": "If enabled, newly created Faction actors will have Link Actor Data enabled in Prototype Token."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Faction Actor: Default Lock Artwork Rotation",
+            "Hint": "If enabled, newly created Faction actors will have Lock Artwork Rotation enabled in Prototype Token."
+          }
+        }
       }
     },
     "Common": {

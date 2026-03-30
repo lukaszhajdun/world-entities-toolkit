@@ -1,7 +1,9 @@
 import {
+  ACTOR_TYPE_SETTINGS_KEYS,
   DEFAULT_SETTINGS,
   MODULE_ID,
-  SETTINGS_KEYS
+  SETTINGS_KEYS,
+  toModuleActorKey
 } from "../core/constants.js";
 
 export function hasSetting(key) {
@@ -27,16 +29,50 @@ export async function setSetting(key, value) {
   return game.settings.set(MODULE_ID, key, value);
 }
 
+function getBooleanSetting(key, fallbackKey) {
+  return getSetting(key, DEFAULT_SETTINGS[fallbackKey]) === true;
+}
+
+function getActorTypeSettingsKeys(actorType) {
+  const actorKey = toModuleActorKey(actorType);
+  if (!actorKey) return null;
+  return ACTOR_TYPE_SETTINGS_KEYS[actorKey] ?? null;
+}
+
 export function getDefaultLinkActorData() {
-  return getSetting(
+  return getBooleanSetting(
     SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA,
-    DEFAULT_SETTINGS[SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA]
-  ) === true;
+    SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA
+  );
 }
 
 export function getDefaultLockArtworkRotation() {
-  return getSetting(
+  return getBooleanSetting(
     SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION,
-    DEFAULT_SETTINGS[SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION]
-  ) === true;
+    SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION
+  );
+}
+
+export function getDefaultLinkActorDataForActorType(actorType) {
+  const actorTypeSettings = getActorTypeSettingsKeys(actorType);
+  if (!actorTypeSettings?.defaultLinkActorData) {
+    return getDefaultLinkActorData();
+  }
+
+  return getBooleanSetting(
+    actorTypeSettings.defaultLinkActorData,
+    actorTypeSettings.defaultLinkActorData
+  );
+}
+
+export function getDefaultLockArtworkRotationForActorType(actorType) {
+  const actorTypeSettings = getActorTypeSettingsKeys(actorType);
+  if (!actorTypeSettings?.defaultLockArtworkRotation) {
+    return getDefaultLockArtworkRotation();
+  }
+
+  return getBooleanSetting(
+    actorTypeSettings.defaultLockArtworkRotation,
+    actorTypeSettings.defaultLockArtworkRotation
+  );
 }

@@ -9,6 +9,46 @@
       "Debug": {
         "Name": "Włącz logowanie debug",
         "Hint": "Zapisuj szczegółowe komunikaty modułu World Entities Toolkit w konsoli przeglądarki."
+      },
+      "DefaultLinkActorData": {
+        "Name": "Domyślne Link Actor Data dla nowych aktorów modułu",
+        "Hint": "Jeśli włączone, nowo tworzeni aktorzy modułu będą mieli w Prototype Token włączone Link Actor Data."
+      },
+      "DefaultLockArtworkRotation": {
+        "Name": "Domyślne Lock Artwork Rotation dla nowych aktorów modułu",
+        "Hint": "Jeśli włączone, nowo tworzeni aktorzy modułu będą mieli w Prototype Token włączone Lock Artwork Rotation."
+      },
+      "ActorTypes": {
+        "Group": {
+          "DefaultLinkActorData": {
+            "Name": "Group Actor: domyślne Link Actor Data",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Group będą mieli w Prototype Token włączone Link Actor Data."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Group Actor: domyślne Lock Artwork Rotation",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Group będą mieli w Prototype Token włączone Lock Artwork Rotation."
+          }
+        },
+        "Vehicle": {
+          "DefaultLinkActorData": {
+            "Name": "Vehicle Actor: domyślne Link Actor Data",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Vehicle będą mieli w Prototype Token włączone Link Actor Data."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Vehicle Actor: domyślne Lock Artwork Rotation",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Vehicle będą mieli w Prototype Token włączone Lock Artwork Rotation."
+          }
+        },
+        "Faction": {
+          "DefaultLinkActorData": {
+            "Name": "Faction Actor: domyślne Link Actor Data",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Faction będą mieli w Prototype Token włączone Link Actor Data."
+          },
+          "DefaultLockArtworkRotation": {
+            "Name": "Faction Actor: domyślne Lock Artwork Rotation",
+            "Hint": "Jeśli włączone, nowo tworzeni aktorzy Faction będą mieli w Prototype Token włączone Lock Artwork Rotation."
+          }
+        }
       }
     },
     "Common": {
