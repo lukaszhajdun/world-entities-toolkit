@@ -3,11 +3,15 @@ export const MODULE_TITLE = "World Entities Toolkit";
 export const LOCALIZATION_PREFIX = "WET";
 
 export const SETTINGS_KEYS = Object.freeze({
-  DEBUG: "debug"
+  DEBUG: "debug",
+  DEFAULT_LINK_ACTOR_DATA: "defaultLinkActorData",
+  DEFAULT_LOCK_ARTWORK_ROTATION: "defaultLockArtworkRotation"
 });
 
 export const DEFAULT_SETTINGS = Object.freeze({
-  [SETTINGS_KEYS.DEBUG]: false
+  [SETTINGS_KEYS.DEBUG]: false,
+  [SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA]: true,
+  [SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION]: true
 });
 
 export const ACTOR_TYPES = Object.freeze({

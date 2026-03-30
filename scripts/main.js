@@ -45,7 +45,8 @@ Hooks.on("preCreateActor", actor => {
 
   const updateData = {
     prototypeToken: {
-      actorLink: true
+      actorLink: settingsApi.getDefaultLinkActorData(),
+      lockRotation: settingsApi.getDefaultLockArtworkRotation()
     }
   };
 

@@ -1,5 +1,7 @@
 import {
-  MODULE_ID
+  DEFAULT_SETTINGS,
+  MODULE_ID,
+  SETTINGS_KEYS
 } from "../core/constants.js";
 
 export function hasSetting(key) {
@@ -23,4 +25,18 @@ export async function setSetting(key, value) {
   }
 
   return game.settings.set(MODULE_ID, key, value);
+}
+
+export function getDefaultLinkActorData() {
+  return getSetting(
+    SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA,
+    DEFAULT_SETTINGS[SETTINGS_KEYS.DEFAULT_LINK_ACTOR_DATA]
+  ) === true;
+}
+
+export function getDefaultLockArtworkRotation() {
+  return getSetting(
+    SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION,
+    DEFAULT_SETTINGS[SETTINGS_KEYS.DEFAULT_LOCK_ARTWORK_ROTATION]
+  ) === true;
 }
