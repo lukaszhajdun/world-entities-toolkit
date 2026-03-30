@@ -86,6 +86,19 @@
           "InvalidType": "Pojazd nie może zostać przypisany jako właściciel.",
           "MissingActor": "Nie udało się odnaleźć powiązanego aktora właściciela."
         }
+      },
+      "Passengers": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora",
+        "Notifications": {
+          "Added": "Pasażer został dodany.",
+          "AlreadyAdded": "Ten aktor jest już w pojeździe.",
+          "DropLocked": "Odblokuj edycję, aby dodawać pasażerów.",
+          "InvalidDrop": "W to miejsce można upuszczać tylko aktorów.",
+          "InvalidType": "Grupy, frakcje i pojazdy nie mogą być pasażerami.",
+          "Full": "W pojeździe nie ma już wolnych miejsc.",
+          "MissingActor": "Nie udało się odnaleźć powiązanego aktora pasażera."
+        }
       }
     },
     "Sheets": {
@@ -137,6 +150,7 @@
       "Vehicle": {
         "Label": "Pojazd (WE)",
         "Sections": {
+          "Passengers": "Pasażerowie",
           "Description": "Opis",
           "Issues": "Usterki"
         },
@@ -148,13 +162,16 @@
           "Durability": "Wytrzymałość",
           "Maneuverability": "Zwrotność",
           "Damage": "Obrażenia",
-          "Armor": "Pancerz"
+          "Armor": "Pancerz",
+          "PassengerCount": "Obłożenie"
         },
         "Actions": {
-          "ClearOwner": "Usuń właściciela"
+          "ClearOwner": "Usuń właściciela",
+          "RemovePassenger": "Usuń pasażera"
         },
         "Empty": {
-          "Owner": "Nie przypisano jeszcze właściciela. Przeciągnij tutaj aktora."
+          "Owner": "Nie przypisano jeszcze właściciela. Przeciągnij tutaj aktora.",
+          "Passengers": "Nie dodano jeszcze pasażerów. Przeciągnij tutaj aktorów."
         },
         "Placeholders": {
           "Name": "Nazwa pojazdu",

@@ -14,6 +14,7 @@ import * as settingsApi from "./settings/access.js";
 import { registerSettings } from "./settings/register.js";
 
 const GROUP_ACTOR_PLACEHOLDER = `modules/${MODULE_ID}/assets/placeholders/group-actor.webp`;
+const VEHICLE_ACTOR_PLACEHOLDER = `modules/${MODULE_ID}/assets/placeholders/vehicle-actor.webp`;
 
 function buildApi() {
   return Object.freeze({
@@ -41,6 +42,21 @@ function isDefaultActorImage(imagePath, actor) {
   return !imagePath || imagePath === defaultIcon;
 }
 
+function applyActorPlaceholder(updateData, actor, placeholderPath) {
+  const currentImage = foundry.utils.getProperty(actor._source, "img");
+  const currentTokenImage = foundry.utils.getProperty(actor._source, "prototypeToken.texture.src");
+
+  if (isDefaultActorImage(currentImage, actor)) {
+    updateData.img = placeholderPath;
+  }
+
+  if (isDefaultActorImage(currentTokenImage, actor)) {
+    updateData.prototypeToken.texture = {
+      src: placeholderPath
+    };
+  }
+}
+
 Hooks.on("preCreateActor", actor => {
   if (!isModuleActorType(actor.type)) return;
 
@@ -52,17 +68,14 @@ Hooks.on("preCreateActor", actor => {
   };
 
   const isGroupActor = actor.type === qualifyModuleActorType(ACTOR_TYPES.GROUP);
-  const currentImage = foundry.utils.getProperty(actor._source, "img");
-  const currentTokenImage = foundry.utils.getProperty(actor._source, "prototypeToken.texture.src");
+  const isVehicleActor = actor.type === qualifyModuleActorType(ACTOR_TYPES.VEHICLE);
 
-  if (isGroupActor && isDefaultActorImage(currentImage, actor)) {
-    updateData.img = GROUP_ACTOR_PLACEHOLDER;
+  if (isGroupActor) {
+    applyActorPlaceholder(updateData, actor, GROUP_ACTOR_PLACEHOLDER);
   }
 
-  if (isGroupActor && isDefaultActorImage(currentTokenImage, actor)) {
-    updateData.prototypeToken.texture = {
-      src: GROUP_ACTOR_PLACEHOLDER
-    };
+  if (isVehicleActor) {
+    applyActorPlaceholder(updateData, actor, VEHICLE_ACTOR_PLACEHOLDER);
   }
 
   actor.updateSource(updateData);

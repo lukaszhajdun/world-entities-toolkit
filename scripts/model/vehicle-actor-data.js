@@ -1,4 +1,5 @@
 import {
+  createActorReferenceArrayField,
   createActorReferenceSchema,
   createIntegerField,
   createStringField
@@ -14,6 +15,7 @@ export class VehicleActorData extends foundry.abstract.TypeDataModel {
       owner: new SchemaField({
         actor: createActorReferenceSchema()
       }),
+      passengers: createActorReferenceArrayField(),
       details: new SchemaField({
         vehicleType: createStringField(),
         seats: createIntegerField(),

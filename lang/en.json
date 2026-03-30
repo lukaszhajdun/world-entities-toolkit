@@ -86,6 +86,19 @@
           "InvalidType": "Vehicles cannot be assigned as owners.",
           "MissingActor": "The linked owner actor could not be found."
         }
+      },
+      "Passengers": {
+        "UnknownName": "Unknown Actor",
+        "MissingActorLabel": "Actor not found",
+        "Notifications": {
+          "Added": "Passenger added.",
+          "AlreadyAdded": "This actor is already in the vehicle.",
+          "DropLocked": "Unlock editing before adding passengers.",
+          "InvalidDrop": "Only actor documents can be dropped here.",
+          "InvalidType": "Groups, factions, and vehicles cannot be passengers.",
+          "Full": "No more passengers can fit in this vehicle.",
+          "MissingActor": "The linked passenger actor could not be found."
+        }
       }
     },
     "Sheets": {
@@ -137,6 +150,7 @@
       "Vehicle": {
         "Label": "Vehicle (WE)",
         "Sections": {
+          "Passengers": "Passengers",
           "Description": "Description",
           "Issues": "Issues"
         },
@@ -148,13 +162,16 @@
           "Durability": "Durability",
           "Maneuverability": "Maneuverability",
           "Damage": "Damage",
-          "Armor": "Armor"
+          "Armor": "Armor",
+          "PassengerCount": "Occupancy"
         },
         "Actions": {
-          "ClearOwner": "Clear owner"
+          "ClearOwner": "Clear owner",
+          "RemovePassenger": "Remove passenger"
         },
         "Empty": {
-          "Owner": "No owner assigned yet. Drag an actor here."
+          "Owner": "No owner assigned yet. Drag an actor here.",
+          "Passengers": "No passengers assigned yet. Drag actors here."
         },
         "Placeholders": {
           "Name": "Vehicle name",

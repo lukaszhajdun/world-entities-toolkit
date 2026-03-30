@@ -4,10 +4,14 @@ import {
 } from "../core/constants.js";
 import { getQualifiedActorType } from "../model/register-models.js";
 import {
+  addVehiclePassenger,
   assignVehicleOwner,
   clearVehicleOwner,
   getVehicleOwnerReference,
-  prepareVehicleOwner
+  getVehiclePassengerCapacity,
+  prepareVehicleOwner,
+  prepareVehiclePassengers,
+  removeVehiclePassengerByIndex
 } from "../services/vehicle-actor.service.js";
 import { openActorReference } from "../services/actor-ref.service.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
@@ -26,7 +30,7 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
     options.position = foundry.utils.mergeObject(
       options.position ?? {},
-      { width: 920 },
+      { width: 1180 },
       { inplace: false }
     );
 
@@ -53,13 +57,23 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const ownerData = await prepareVehicleOwner(this.actor);
+    const [ownerData, passengers] = await Promise.all([
+      prepareVehicleOwner(this.actor),
+      prepareVehiclePassengers(this.actor)
+    ]);
+
+    const passengerCapacity = getVehiclePassengerCapacity(this.actor);
+    const passengersCount = passengers.length;
 
     return foundry.utils.mergeObject(
       context,
       {
         ownerData,
-        hasOwner: Boolean(ownerData)
+        hasOwner: Boolean(ownerData),
+        passengers,
+        hasPassengers: passengersCount > 0,
+        passengersCount,
+        passengerCapacity
       },
       { inplace: false }
     );
@@ -69,6 +83,7 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     await super._onRender(context, options);
     this._attachPortraitListeners();
     this._attachOwnerListeners();
+    this._attachPassengerListeners();
     this._attachDropZoneListeners();
   }
 
@@ -95,17 +110,29 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
   }
 
+  _attachPassengerListeners() {
+    const form = this.form;
+    if (!form) return;
+
+    for (const button of form.querySelectorAll("[data-passenger-open]")) {
+      button.addEventListener("click", this._onPassengerOpen.bind(this));
+    }
+
+    for (const button of form.querySelectorAll("[data-passenger-remove]")) {
+      button.addEventListener("click", this._onPassengerRemove.bind(this));
+    }
+  }
+
   _attachDropZoneListeners() {
     const form = this.form;
     if (!form) return;
 
-    const dropZone = form.querySelector("[data-drop-zone='owner']");
-    if (!dropZone) return;
-
-    dropZone.addEventListener("dragenter", this._onOwnerDragEnter.bind(this));
-    dropZone.addEventListener("dragover", this._onOwnerDragOver.bind(this));
-    dropZone.addEventListener("dragleave", this._onOwnerDragLeave.bind(this));
-    dropZone.addEventListener("drop", this._onOwnerDropUI.bind(this));
+    for (const dropZone of form.querySelectorAll("[data-drop-zone]")) {
+      dropZone.addEventListener("dragenter", this._onDropZoneDragEnter.bind(this));
+      dropZone.addEventListener("dragover", this._onDropZoneDragOver.bind(this));
+      dropZone.addEventListener("dragleave", this._onDropZoneDragLeave.bind(this));
+      dropZone.addEventListener("drop", this._onDropZoneDropUI.bind(this));
+    }
   }
 
   async _onPortraitEdit(event) {
@@ -127,13 +154,12 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     await picker.browse(initialTarget);
   }
 
-  _onOwnerDragEnter(event) {
+  _onDropZoneDragEnter(event) {
     if (!this.canEditDocument) return;
-    const dropZone = event.currentTarget;
-    dropZone.classList.add("is-dragover");
+    event.currentTarget.classList.add("is-dragover");
   }
 
-  _onOwnerDragOver(event) {
+  _onDropZoneDragOver(event) {
     if (!this.canEditDocument) return;
 
     event.preventDefault();
@@ -142,11 +168,10 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
       event.dataTransfer.dropEffect = "copy";
     }
 
-    const dropZone = event.currentTarget;
-    dropZone.classList.add("is-dragover");
+    event.currentTarget.classList.add("is-dragover");
   }
 
-  _onOwnerDragLeave(event) {
+  _onDropZoneDragLeave(event) {
     const dropZone = event.currentTarget;
     const relatedTarget = event.relatedTarget;
 
@@ -154,18 +179,28 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     dropZone.classList.remove("is-dragover");
   }
 
-  _onOwnerDropUI(event) {
+  _onDropZoneDropUI(event) {
     event.preventDefault();
-    const dropZone = event.currentTarget;
-    dropZone.classList.remove("is-dragover");
+    event.currentTarget.classList.remove("is-dragover");
   }
 
   async _onDropActor(event, actor) {
     const target = event.target instanceof HTMLElement ? event.target : null;
-    const dropZone = target?.closest("[data-drop-zone='owner']");
+    const ownerDropZone = target?.closest("[data-drop-zone='owner']");
+    const passengersDropZone = target?.closest("[data-drop-zone='passengers']");
 
-    if (!dropZone) return null;
+    if (ownerDropZone) {
+      return this._handleOwnerDrop(actor);
+    }
 
+    if (passengersDropZone) {
+      return this._handlePassengerDrop(actor);
+    }
+
+    return null;
+  }
+
+  async _handleOwnerDrop(actor) {
     if (!this.canEditDocument) {
       ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Owner.Notifications.DropLocked"));
       return null;
@@ -188,6 +223,37 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
   }
 
+  async _handlePassengerDrop(actor) {
+    if (!this.canEditDocument) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.DropLocked"));
+      return null;
+    }
+
+    const result = await addVehiclePassenger(this.actor, actor);
+
+    switch (result.status) {
+      case "added":
+        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Passengers.Notifications.Added"));
+        return actor;
+
+      case "duplicate":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.AlreadyAdded"));
+        return null;
+
+      case "invalidType":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.InvalidType"));
+        return null;
+
+      case "full":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.Full"));
+        return null;
+
+      default:
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.InvalidDrop"));
+        return null;
+    }
+  }
+
   async _onOwnerOpen(event) {
     event.preventDefault();
 
@@ -205,6 +271,33 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     if (!this.canEditDocument) return;
 
     await clearVehicleOwner(this.actor);
+  }
+
+  async _onPassengerOpen(event) {
+    event.preventDefault();
+
+    const button = event.currentTarget;
+    const index = Number(button.dataset.passengerIndex);
+    if (!Number.isInteger(index)) return;
+
+    const passenger = this.actor.system.passengers?.[index];
+    if (!passenger) return;
+
+    const opened = await openActorReference(passenger);
+    if (!opened) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.MissingActor"));
+    }
+  }
+
+  async _onPassengerRemove(event) {
+    event.preventDefault();
+    if (!this.canEditDocument) return;
+
+    const button = event.currentTarget;
+    const index = Number(button.dataset.passengerIndex);
+    if (!Number.isInteger(index)) return;
+
+    await removeVehiclePassengerByIndex(this.actor, index);
   }
 }
 

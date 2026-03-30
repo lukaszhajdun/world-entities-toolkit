@@ -1,25 +1,7 @@
 <form class="wet-sheet wet-vehicle-sheet {{cssClass}}" autocomplete="off">
   <div class="wet-vehicle-shell">
     <div class="wet-vehicle-shell__top">
-      <div class="wet-vehicle-identity-stack">
-        <section class="wet-sheet__section wet-vehicle-portrait-panel">
-          <button
-            class="wet-portrait-button wet-sheet__portrait wet-vehicle-header__portrait {{#if canEdit}}is-editable{{/if}}"
-            type="button"
-            data-edit-image="true"
-            data-edit="img"
-            title="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
-            aria-label="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
-            {{#unless canEdit}}disabled{{/unless}}
-          >
-            <img
-              class="wet-sheet__portrait-image"
-              src="{{actor.img}}"
-              alt="{{actor.name}}"
-            >
-          </button>
-        </section>
-
+      <div class="wet-vehicle-column wet-vehicle-column--left">
         <section class="wet-sheet__section wet-vehicle-name-panel">
           <div class="wet-field">
             <div class="wet-vehicle-name-panel__header">
@@ -51,9 +33,60 @@
             >
           </div>
         </section>
+
+        <section class="wet-sheet__section wet-vehicle-portrait-panel">
+          <button
+            class="wet-portrait-button wet-sheet__portrait wet-vehicle-header__portrait {{#if canEdit}}is-editable{{/if}}"
+            type="button"
+            data-edit-image="true"
+            data-edit="img"
+            title="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
+            aria-label="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
+            {{#unless canEdit}}disabled{{/unless}}
+          >
+            <img
+              class="wet-sheet__portrait-image"
+              src="{{actor.img}}"
+              alt="{{actor.name}}"
+            >
+          </button>
+        </section>
+
+        <section class="wet-sheet__section wet-vehicle-details-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-vehicle-type">
+              {{localize "WET.Sheets.Vehicle.Fields.VehicleType"}}
+            </label>
+            <input
+              id="{{rootId}}-vehicle-type"
+              class="wet-field__input"
+              type="text"
+              name="system.details.vehicleType"
+              value="{{system.details.vehicleType}}"
+              placeholder="{{localize "WET.Sheets.Vehicle.Placeholders.VehicleType"}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-seats">
+              {{localize "WET.Sheets.Vehicle.Fields.Seats"}}
+            </label>
+            <input
+              id="{{rootId}}-seats"
+              class="wet-field__input"
+              type="number"
+              min="0"
+              step="1"
+              name="system.details.seats"
+              value="{{system.details.seats}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+        </section>
       </div>
 
-      <div class="wet-vehicle-main-stack">
+      <div class="wet-vehicle-column wet-vehicle-column--middle">
         <section class="wet-sheet__section wet-vehicle-owner-panel">
           <div class="wet-field">
             <div
@@ -124,126 +157,171 @@
           </div>
         </section>
 
-        <div class="wet-vehicle-main-grid">
-          <section class="wet-sheet__section wet-vehicle-details-panel">
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-vehicle-type">
-                {{localize "WET.Sheets.Vehicle.Fields.VehicleType"}}
-              </label>
-              <input
-                id="{{rootId}}-vehicle-type"
-                class="wet-field__input"
-                type="text"
-                name="system.details.vehicleType"
-                value="{{system.details.vehicleType}}"
-                placeholder="{{localize "WET.Sheets.Vehicle.Placeholders.VehicleType"}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
-            </div>
+        <section class="wet-sheet__section wet-vehicle-state-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-state">
+              {{localize "WET.Sheets.Vehicle.Fields.State"}}
+            </label>
+            <input
+              id="{{rootId}}-state"
+              class="wet-field__input"
+              type="text"
+              name="system.details.state"
+              value="{{system.details.state}}"
+              placeholder="{{localize "WET.Sheets.Vehicle.Placeholders.State"}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+        </section>
 
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-seats">
-                {{localize "WET.Sheets.Vehicle.Fields.Seats"}}
-              </label>
-              <input
-                id="{{rootId}}-seats"
-                class="wet-field__input"
-                type="number"
-                min="0"
-                step="1"
-                name="system.details.seats"
-                value="{{system.details.seats}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
-            </div>
+        <section class="wet-sheet__section wet-vehicle-stats-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-durability">
+              {{localize "WET.Sheets.Vehicle.Fields.Durability"}}
+            </label>
+            <input
+              id="{{rootId}}-durability"
+              class="wet-field__input"
+              type="number"
+              min="0"
+              step="1"
+              name="system.stats.durability"
+              value="{{system.stats.durability}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
 
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-state">
-                {{localize "WET.Sheets.Vehicle.Fields.State"}}
-              </label>
-              <input
-                id="{{rootId}}-state"
-                class="wet-field__input"
-                type="text"
-                name="system.details.state"
-                value="{{system.details.state}}"
-                placeholder="{{localize "WET.Sheets.Vehicle.Placeholders.State"}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
-            </div>
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-maneuverability">
+              {{localize "WET.Sheets.Vehicle.Fields.Maneuverability"}}
+            </label>
+            <input
+              id="{{rootId}}-maneuverability"
+              class="wet-field__input"
+              type="number"
+              min="0"
+              step="1"
+              name="system.stats.maneuverability"
+              value="{{system.stats.maneuverability}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
 
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-damage">
+              {{localize "WET.Sheets.Vehicle.Fields.Damage"}}
+            </label>
+            <input
+              id="{{rootId}}-damage"
+              class="wet-field__input"
+              type="number"
+              min="0"
+              step="1"
+              name="system.stats.damage"
+              value="{{system.stats.damage}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-armor">
+              {{localize "WET.Sheets.Vehicle.Fields.Armor"}}
+            </label>
+            <input
+              id="{{rootId}}-armor"
+              class="wet-field__input"
+              type="number"
+              min="0"
+              step="1"
+              name="system.stats.armor"
+              value="{{system.stats.armor}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+        </section>
+      </div>
+
+      <div class="wet-vehicle-column wet-vehicle-column--right">
+        <section class="wet-sheet__section wet-vehicle-passengers-panel">
+          <div class="wet-vehicle-passengers-panel__header">
             <div
-              class="wet-vehicle-details-panel__future-slot"
-              aria-hidden="true"
-            ></div>
-          </section>
-
-          <section class="wet-sheet__section wet-vehicle-stats-panel">
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-durability">
-                {{localize "WET.Sheets.Vehicle.Fields.Durability"}}
-              </label>
-              <input
-                id="{{rootId}}-durability"
-                class="wet-field__input"
-                type="number"
-                min="0"
-                step="1"
-                name="system.stats.durability"
-                value="{{system.stats.durability}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
+              class="wet-field__label wet-field__label--section"
+              role="heading"
+              aria-level="2"
+            >
+              {{localize "WET.Sheets.Vehicle.Sections.Passengers"}}
             </div>
 
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-maneuverability">
-                {{localize "WET.Sheets.Vehicle.Fields.Maneuverability"}}
-              </label>
-              <input
-                id="{{rootId}}-maneuverability"
-                class="wet-field__input"
-                type="number"
-                min="0"
-                step="1"
-                name="system.stats.maneuverability"
-                value="{{system.stats.maneuverability}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
+            <div class="wet-vehicle-passengers-panel__count">
+              <span class="wet-muted">{{localize "WET.Sheets.Vehicle.Fields.PassengerCount"}}</span>
+              <strong>{{passengersCount}} / {{passengerCapacity}}</strong>
             </div>
+          </div>
 
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-damage">
-                {{localize "WET.Sheets.Vehicle.Fields.Damage"}}
-              </label>
-              <input
-                id="{{rootId}}-damage"
-                class="wet-field__input"
-                type="number"
-                min="0"
-                step="1"
-                name="system.stats.damage"
-                value="{{system.stats.damage}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
-            </div>
+          <div
+            class="wet-vehicle-passengers-drop wet-drop-zone"
+            data-drop-zone="passengers"
+          >
+            {{#if hasPassengers}}
+              <div class="wet-passenger-list">
+                {{#each passengers}}
+                  <article class="wet-passenger-card {{#unless this.exists}}wet-passenger-card--missing{{/unless}}">
+                    <button
+                      class="wet-passenger-card__main"
+                      type="button"
+                      data-passenger-open="true"
+                      data-passenger-index="{{this.index}}"
+                    >
+                      <span class="wet-passenger-card__media">
+                        <span class="wet-passenger-card__thumb">
+                          <img
+                            class="wet-passenger-card__image"
+                            src="{{this.img}}"
+                            alt="{{this.name}}"
+                          >
+                        </span>
+                      </span>
 
-            <div class="wet-field">
-              <label class="wet-field__label" for="{{rootId}}-armor">
-                {{localize "WET.Sheets.Vehicle.Fields.Armor"}}
-              </label>
-              <input
-                id="{{rootId}}-armor"
-                class="wet-field__input"
-                type="number"
-                min="0"
-                step="1"
-                name="system.stats.armor"
-                value="{{system.stats.armor}}"
-                {{#unless editable}}disabled{{/unless}}
-              >
-            </div>
-          </section>
-        </div>
+                      <span class="wet-passenger-card__content">
+                        <span class="wet-passenger-card__name">{{this.name}}</span>
+
+                        {{#if this.typeLabel}}
+                          <span class="wet-passenger-card__meta wet-muted">{{this.typeLabel}}</span>
+                        {{/if}}
+
+                        {{#unless this.exists}}
+                          <span class="wet-passenger-card__missing wet-muted">
+                            {{localize "WET.Vehicle.Passengers.MissingActorLabel"}}
+                          </span>
+                        {{/unless}}
+                      </span>
+                    </button>
+
+                    <div class="wet-passenger-card__actions">
+                      <button
+                        class="wet-inline-icon-button"
+                        type="button"
+                        title="{{localize "WET.Sheets.Vehicle.Actions.RemovePassenger"}}"
+                        aria-label="{{localize "WET.Sheets.Vehicle.Actions.RemovePassenger"}}"
+                        data-passenger-remove="true"
+                        data-passenger-index="{{this.index}}"
+                        {{#unless @root.canEdit}}disabled{{/unless}}
+                      >
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                    </div>
+                  </article>
+                {{/each}}
+              </div>
+            {{else}}
+              <div class="wet-empty-state wet-vehicle-passengers-drop__empty">
+                <p class="wet-empty-state__text">
+                  {{localize "WET.Sheets.Vehicle.Empty.Passengers"}}
+                </p>
+              </div>
+            {{/if}}
+          </div>
+        </section>
       </div>
     </div>
 

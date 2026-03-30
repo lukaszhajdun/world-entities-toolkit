@@ -16,7 +16,9 @@
     "scripts/main.js"
   ],
   "styles": [
-    "styles/module.css"
+    "styles/base.css",
+    "styles/group-sheet.css",
+    "styles/vehicle-sheet.css"
   ],
   "languages": [
     {
