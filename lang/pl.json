@@ -75,6 +75,19 @@
         }
       }
     },
+    "Vehicle": {
+      "Owner": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora",
+        "Notifications": {
+          "Assigned": "Właściciel został przypisany.",
+          "DropLocked": "Odblokuj edycję, aby przypisać właściciela.",
+          "InvalidDrop": "W to miejsce można upuszczać tylko aktorów.",
+          "InvalidType": "Pojazd nie może zostać przypisany jako właściciel.",
+          "MissingActor": "Nie udało się odnaleźć powiązanego aktora właściciela."
+        }
+      }
+    },
     "Sheets": {
       "Common": {
         "Unnamed": "Nowy byt",
@@ -119,6 +132,36 @@
           "Location": "np. Północna autostrada",
           "Description": "Opisz grupę...",
           "Notes": "Dodaj notatki do tej grupy..."
+        }
+      },
+      "Vehicle": {
+        "Label": "Pojazd (WE)",
+        "Sections": {
+          "Description": "Opis",
+          "Issues": "Usterki"
+        },
+        "Fields": {
+          "Owner": "Właściciel",
+          "VehicleType": "Typ pojazdu",
+          "Seats": "Miejsca",
+          "State": "Stan",
+          "Durability": "Wytrzymałość",
+          "Maneuverability": "Zwrotność",
+          "Damage": "Obrażenia",
+          "Armor": "Pancerz"
+        },
+        "Actions": {
+          "ClearOwner": "Usuń właściciela"
+        },
+        "Empty": {
+          "Owner": "Nie przypisano jeszcze właściciela. Przeciągnij tutaj aktora."
+        },
+        "Placeholders": {
+          "Name": "Nazwa pojazdu",
+          "VehicleType": "np. Ciężarówka",
+          "State": "np. Sprawny",
+          "Description": "Opisz pojazd...",
+          "Issues": "Wpisz usterki, uszkodzenia i notatki serwisowe..."
         }
       }
     }

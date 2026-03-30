@@ -75,6 +75,19 @@
         }
       }
     },
+    "Vehicle": {
+      "Owner": {
+        "UnknownName": "Unknown Actor",
+        "MissingActorLabel": "Actor not found",
+        "Notifications": {
+          "Assigned": "Owner assigned.",
+          "DropLocked": "Unlock editing before assigning an owner.",
+          "InvalidDrop": "Only actor documents can be dropped here.",
+          "InvalidType": "Vehicles cannot be assigned as owners.",
+          "MissingActor": "The linked owner actor could not be found."
+        }
+      }
+    },
     "Sheets": {
       "Common": {
         "Unnamed": "New Entity",
@@ -119,6 +132,36 @@
           "Location": "e.g. Northern Highway",
           "Description": "Describe the group...",
           "Notes": "Add notes for this group..."
+        }
+      },
+      "Vehicle": {
+        "Label": "Vehicle (WE)",
+        "Sections": {
+          "Description": "Description",
+          "Issues": "Issues"
+        },
+        "Fields": {
+          "Owner": "Owner",
+          "VehicleType": "Vehicle Type",
+          "Seats": "Seats",
+          "State": "State",
+          "Durability": "Durability",
+          "Maneuverability": "Maneuverability",
+          "Damage": "Damage",
+          "Armor": "Armor"
+        },
+        "Actions": {
+          "ClearOwner": "Clear owner"
+        },
+        "Empty": {
+          "Owner": "No owner assigned yet. Drag an actor here."
+        },
+        "Placeholders": {
+          "Name": "Vehicle name",
+          "VehicleType": "e.g. Truck",
+          "State": "e.g. Operational",
+          "Description": "Describe the vehicle...",
+          "Issues": "List faults, damage, and maintenance notes..."
         }
       }
     }

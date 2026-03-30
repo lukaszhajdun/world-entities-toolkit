@@ -1,9 +1,7 @@
 import {
-  createActorReferenceArrayField,
+  createActorReferenceSchema,
   createIntegerField,
-  createStringArrayField,
-  createStringField,
-  createSummarySchema
+  createStringField
 } from "./common-fields.js";
 
 const { SchemaField } = foundry.data.fields;
@@ -13,21 +11,24 @@ export class VehicleActorData extends foundry.abstract.TypeDataModel {
 
   static defineSchema() {
     return {
-      summary: createSummarySchema(),
-      details: new SchemaField({
-        vehicleType: createStringField()
+      owner: new SchemaField({
+        actor: createActorReferenceSchema()
       }),
-      capacity: new SchemaField({
-        seats: createIntegerField()
+      details: new SchemaField({
+        vehicleType: createStringField(),
+        seats: createIntegerField(),
+        state: createStringField()
       }),
       stats: new SchemaField({
-        condition: createIntegerField(),
+        durability: createIntegerField(),
         maneuverability: createIntegerField(),
         damage: createIntegerField(),
         armor: createIntegerField()
       }),
-      passengers: createActorReferenceArrayField(),
-      problems: createStringArrayField()
+      summary: new SchemaField({
+        description: createStringField(),
+        issues: createStringField()
+      })
     };
   }
 }

@@ -436,9 +436,209 @@
   align-self: center;
 }
 
+.wet-vehicle-shell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wet-space-3);
+  min-width: 0;
+}
+
+.wet-vehicle-shell__top {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: var(--wet-space-3);
+  align-items: start;
+  min-width: 0;
+}
+
+.wet-vehicle-shell__bottom {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--wet-space-3);
+  align-items: start;
+  min-width: 0;
+}
+
+.wet-vehicle-identity-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wet-space-2);
+  min-width: 0;
+}
+
+.wet-vehicle-main-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wet-space-2);
+  min-width: 0;
+}
+
+.wet-vehicle-main-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--wet-space-2);
+  align-items: stretch;
+  min-width: 0;
+}
+
+.wet-vehicle-portrait-panel,
+.wet-vehicle-name-panel,
+.wet-vehicle-owner-panel,
+.wet-vehicle-details-panel,
+.wet-vehicle-stats-panel,
+.wet-vehicle-text-panel {
+  min-width: 0;
+}
+
+.wet-vehicle-portrait-panel {
+  padding: var(--wet-space-2);
+}
+
+.wet-vehicle-name-panel {
+  justify-content: center;
+  padding: var(--wet-space-2) var(--wet-space-3);
+}
+
+.wet-vehicle-name-panel__header {
+  display: flex;
+  align-items: center;
+  gap: var(--wet-space-2);
+}
+
+.wet-vehicle-header__portrait {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-md);
+  background: rgba(0, 0, 0, 0.18);
+  box-sizing: border-box;
+}
+
+.wet-vehicle-details-panel,
+.wet-vehicle-stats-panel {
+  justify-content: flex-start;
+}
+
+.wet-vehicle-details-panel__future-slot {
+  min-height: 3.25rem;
+  width: 100%;
+  pointer-events: none;
+}
+
+.wet-vehicle-owner-drop {
+  display: flex;
+  min-height: 74px;
+  min-width: 0;
+}
+
+.wet-vehicle-owner-drop__empty {
+  width: 100%;
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+}
+
+.wet-owner-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--wet-space-2);
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  padding: var(--wet-space-2) var(--wet-space-3);
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-md);
+  background: rgba(0, 0, 0, 0.12);
+  box-sizing: border-box;
+}
+
+.wet-owner-card--missing {
+  opacity: 0.85;
+}
+
+.wet-owner-card__main {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: var(--wet-space-2);
+  align-items: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wet-owner-card__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+.wet-owner-card__thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  border: 1px solid var(--wet-border-color);
+  border-radius: var(--wet-radius-sm);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.wet-owner-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wet-owner-card__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.wet-owner-card__name {
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wet-owner-card__meta,
+.wet-owner-card__missing {
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.wet-owner-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 980px) {
   .wet-group-shell__grid {
     grid-template-columns: 1fr;
+  }
+
+  .wet-vehicle-shell__top,
+  .wet-vehicle-shell__bottom,
+  .wet-vehicle-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wet-vehicle-identity-stack {
+    max-width: 320px;
   }
 }
 
@@ -474,6 +674,14 @@
   }
 
   .wet-member-card__remove {
+    justify-self: end;
+  }
+
+  .wet-owner-card {
+    grid-template-columns: 1fr;
+  }
+
+  .wet-owner-card__actions {
     justify-self: end;
   }
 }
