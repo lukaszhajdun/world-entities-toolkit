@@ -97,7 +97,10 @@
           "InvalidDrop": "Only actor documents can be dropped here.",
           "InvalidType": "Groups, factions, and vehicles cannot be passengers.",
           "Full": "No more passengers can fit in this vehicle.",
-          "MissingActor": "The linked passenger actor could not be found."
+          "MissingActor": "The linked passenger actor could not be found.",
+          "GroupAdded": "Eligible group members added as passengers.",
+          "GroupNoEligible": "This group has no eligible members to add.",
+          "GroupFull": "This group does not fit in the available seats. No passengers were added."
         }
       }
     },

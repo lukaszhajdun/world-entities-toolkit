@@ -18,7 +18,7 @@ export class VehicleActorData extends foundry.abstract.TypeDataModel {
       passengers: createActorReferenceArrayField(),
       details: new SchemaField({
         vehicleType: createStringField(),
-        seats: createIntegerField(),
+        seats: createIntegerField({ initial: 2 }),
         state: createStringField()
       }),
       stats: new SchemaField({

@@ -52,6 +52,11 @@ function normalizeActorTypeKey(actorType) {
   return actorType;
 }
 
+function isModuleGroupActorDocument(actor) {
+  if (!actor || actor.documentName !== "Actor") return false;
+  return normalizeActorTypeKey(actor.type) === ACTOR_TYPES.GROUP;
+}
+
 function isPassengerDisallowedActor(actor) {
   if (!actor || actor.documentName !== "Actor") return true;
   return DISALLOWED_PASSENGER_TYPES.has(normalizeActorTypeKey(actor.type));
@@ -59,6 +64,36 @@ function isPassengerDisallowedActor(actor) {
 
 function getVehiclePassengersArray(actor) {
   return Array.isArray(actor?.system?.passengers) ? [...actor.system.passengers] : [];
+}
+
+function getGroupMembersArray(actor) {
+  return Array.isArray(actor?.system?.members) ? [...actor.system.members] : [];
+}
+
+function hasActorReferenceInList(references, candidateReference) {
+  return references.some(reference => isSameActorReference(reference, candidateReference));
+}
+
+async function getEligibleGroupPassengerActors(vehicleActor, groupActor) {
+  const currentPassengers = getVehiclePassengersArray(vehicleActor);
+  const groupMembers = getGroupMembersArray(groupActor);
+  const eligibleActors = [];
+  const selectedReferences = [];
+
+  for (const memberReference of groupMembers) {
+    const resolvedActor = await resolveActorReference(memberReference);
+    if (!resolvedActor || resolvedActor.documentName !== "Actor") continue;
+    if (isPassengerDisallowedActor(resolvedActor)) continue;
+
+    const resolvedReference = createActorReference(resolvedActor);
+    if (hasActorReferenceInList(currentPassengers, resolvedReference)) continue;
+    if (hasActorReferenceInList(selectedReferences, resolvedReference)) continue;
+
+    eligibleActors.push(resolvedActor);
+    selectedReferences.push(resolvedReference);
+  }
+
+  return eligibleActors;
 }
 
 function getResolvedActorPresentation(reference, resolved, fallbackNameKey) {
@@ -150,6 +185,46 @@ export function hasVehiclePassenger(actor, candidateActor) {
   return passengers.some(passenger => isSameActorReference(passenger, candidateReference));
 }
 
+async function addVehiclePassengerGroup(vehicleActor, groupActor) {
+  const passengers = getVehiclePassengersArray(vehicleActor);
+  const capacity = getVehiclePassengerCapacity(vehicleActor);
+  const freeSeats = Math.max(0, capacity - passengers.length);
+  const eligibleActors = await getEligibleGroupPassengerActors(vehicleActor, groupActor);
+
+  if (eligibleActors.length === 0) {
+    return {
+      status: "groupNoEligible",
+      capacity,
+      count: passengers.length
+    };
+  }
+
+  if (eligibleActors.length > freeSeats) {
+    return {
+      status: "groupFull",
+      needed: eligibleActors.length,
+      available: freeSeats,
+      capacity,
+      count: passengers.length
+    };
+  }
+
+  const nextPassengers = [
+    ...passengers,
+    ...eligibleActors.map(memberActor => createActorReference(memberActor))
+  ];
+
+  await vehicleActor.update({ "system.passengers": nextPassengers });
+
+  return {
+    status: "groupAdded",
+    addedCount: eligibleActors.length,
+    capacity,
+    count: nextPassengers.length,
+    group: groupActor
+  };
+}
+
 export async function addVehiclePassenger(actor, candidateActor) {
   if (!actor || actor.documentName !== "Actor") {
     return { status: "invalid" };
@@ -157,6 +232,10 @@ export async function addVehiclePassenger(actor, candidateActor) {
 
   if (!candidateActor || candidateActor.documentName !== "Actor") {
     return { status: "invalid" };
+  }
+
+  if (isModuleGroupActorDocument(candidateActor)) {
+    return addVehiclePassengerGroup(actor, candidateActor);
   }
 
   if (isPassengerDisallowedActor(candidateActor)) {

@@ -97,7 +97,10 @@
           "InvalidDrop": "W to miejsce można upuszczać tylko aktorów.",
           "InvalidType": "Grupy, frakcje i pojazdy nie mogą być pasażerami.",
           "Full": "W pojeździe nie ma już wolnych miejsc.",
-          "MissingActor": "Nie udało się odnaleźć powiązanego aktora pasażera."
+          "MissingActor": "Nie udało się odnaleźć powiązanego aktora pasażera.",
+          "GroupAdded": "Dozwoleni członkowie grupy zostali dodani jako pasażerowie.",
+          "GroupNoEligible": "Ta grupa nie ma żadnych kwalifikujących się członków do dodania.",
+          "GroupFull": "Ta grupa nie mieści się w dostępnych miejscach. Nie dodano żadnych pasażerów."
         }
       }
     },

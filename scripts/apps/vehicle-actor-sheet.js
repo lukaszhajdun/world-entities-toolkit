@@ -30,7 +30,7 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
     options.position = foundry.utils.mergeObject(
       options.position ?? {},
-      { width: 1180 },
+      { width: 960 },
       { inplace: false }
     );
 
@@ -236,8 +236,16 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
         ui.notifications?.info(game.i18n.localize("WET.Vehicle.Passengers.Notifications.Added"));
         return actor;
 
+      case "groupAdded":
+        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Passengers.Notifications.GroupAdded"));
+        return actor;
+
       case "duplicate":
         ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.AlreadyAdded"));
+        return null;
+
+      case "groupNoEligible":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.GroupNoEligible"));
         return null;
 
       case "invalidType":
@@ -246,6 +254,10 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
       case "full":
         ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.Full"));
+        return null;
+
+      case "groupFull":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.GroupFull"));
         return null;
 
       default:
