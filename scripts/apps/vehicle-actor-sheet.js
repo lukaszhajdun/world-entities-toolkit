@@ -13,13 +13,15 @@ import {
   prepareVehiclePassengers,
   removeVehiclePassengerByIndex
 } from "../services/vehicle-actor.service.js";
+import { getClosestDropZoneId } from "../services/dragdrop.service.js";
 import { openActorReference } from "../services/actor-ref.service.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
+import { DropZoneMixin } from "./mixins/drop-zone-mixin.js";
 
 const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
 
-export class VehicleActorSheet extends BaseModuleActorSheet {
+export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -55,6 +57,10 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     };
   }
 
+  _getDropZoneIds() {
+    return ["owner", "passengers"];
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const [ownerData, passengers] = await Promise.all([
@@ -84,7 +90,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     this._attachPortraitListeners();
     this._attachOwnerListeners();
     this._attachPassengerListeners();
-    this._attachDropZoneListeners();
   }
 
   _attachPortraitListeners() {
@@ -123,18 +128,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
   }
 
-  _attachDropZoneListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const dropZone of form.querySelectorAll("[data-drop-zone]")) {
-      dropZone.addEventListener("dragenter", this._onDropZoneDragEnter.bind(this));
-      dropZone.addEventListener("dragover", this._onDropZoneDragOver.bind(this));
-      dropZone.addEventListener("dragleave", this._onDropZoneDragLeave.bind(this));
-      dropZone.addEventListener("drop", this._onDropZoneDropUI.bind(this));
-    }
-  }
-
   async _onPortraitEdit(event) {
     event.preventDefault();
     if (!this.canEditDocument) return;
@@ -154,50 +147,19 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     await picker.browse(initialTarget);
   }
 
-  _onDropZoneDragEnter(event) {
-    if (!this.canEditDocument) return;
-    event.currentTarget.classList.add("is-dragover");
-  }
-
-  _onDropZoneDragOver(event) {
-    if (!this.canEditDocument) return;
-
-    event.preventDefault();
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = "copy";
-    }
-
-    event.currentTarget.classList.add("is-dragover");
-  }
-
-  _onDropZoneDragLeave(event) {
-    const dropZone = event.currentTarget;
-    const relatedTarget = event.relatedTarget;
-
-    if (relatedTarget instanceof Node && dropZone.contains(relatedTarget)) return;
-    dropZone.classList.remove("is-dragover");
-  }
-
-  _onDropZoneDropUI(event) {
-    event.preventDefault();
-    event.currentTarget.classList.remove("is-dragover");
-  }
-
   async _onDropActor(event, actor) {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const ownerDropZone = target?.closest("[data-drop-zone='owner']");
-    const passengersDropZone = target?.closest("[data-drop-zone='passengers']");
+    const dropZoneId = getClosestDropZoneId(event);
 
-    if (ownerDropZone) {
-      return this._handleOwnerDrop(actor);
+    switch (dropZoneId) {
+      case "owner":
+        return this._handleOwnerDrop(actor);
+
+      case "passengers":
+        return this._handlePassengerDrop(actor);
+
+      default:
+        return null;
     }
-
-    if (passengersDropZone) {
-      return this._handlePassengerDrop(actor);
-    }
-
-    return null;
   }
 
   async _handleOwnerDrop(actor) {

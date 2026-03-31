@@ -3,6 +3,9 @@ import {
   MODULE_ID
 } from "../core/constants.js";
 import {
+  getClosestDropZoneId
+} from "../services/dragdrop.service.js";
+import {
   openActorReference
 } from "../services/actor-ref.service.js";
 import {
@@ -12,11 +15,12 @@ import {
 } from "../services/group-actor.service.js";
 import { getQualifiedActorType } from "../model/register-models.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
+import { DropZoneMixin } from "./mixins/drop-zone-mixin.js";
 
 const { FilePicker } = foundry.applications.apps;
 const GROUP_TYPE = getQualifiedActorType(ACTOR_TYPES.GROUP);
 
-export class GroupActorSheet extends BaseModuleActorSheet {
+export class GroupActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -52,6 +56,10 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     };
   }
 
+  _getDropZoneIds() {
+    return ["members"];
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const members = await prepareGroupMembers(this.actor);
@@ -71,7 +79,6 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     await super._onRender(context, options);
     this._attachMemberListeners();
     this._attachPortraitListeners();
-    this._attachDropZoneListeners();
   }
 
   _attachMemberListeners() {
@@ -97,19 +104,6 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     }
   }
 
-  _attachDropZoneListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    const dropZone = form.querySelector("[data-drop-zone='members']");
-    if (!dropZone) return;
-
-    dropZone.addEventListener("dragenter", this._onMembersDragEnter.bind(this));
-    dropZone.addEventListener("dragover", this._onMembersDragOver.bind(this));
-    dropZone.addEventListener("dragleave", this._onMembersDragLeave.bind(this));
-    dropZone.addEventListener("drop", this._onMembersDropUI.bind(this));
-  }
-
   async _onPortraitEdit(event) {
     event.preventDefault();
     if (!this.canEditDocument) return;
@@ -129,44 +123,9 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     await picker.browse(initialTarget);
   }
 
-  _onMembersDragEnter(event) {
-    if (!this.canEditDocument) return;
-    const dropZone = event.currentTarget;
-    dropZone.classList.add("is-dragover");
-  }
-
-  _onMembersDragOver(event) {
-    if (!this.canEditDocument) return;
-
-    event.preventDefault();
-
-    if (event.dataTransfer) {
-      event.dataTransfer.dropEffect = "copy";
-    }
-
-    const dropZone = event.currentTarget;
-    dropZone.classList.add("is-dragover");
-  }
-
-  _onMembersDragLeave(event) {
-    const dropZone = event.currentTarget;
-    const relatedTarget = event.relatedTarget;
-
-    if (relatedTarget instanceof Node && dropZone.contains(relatedTarget)) return;
-    dropZone.classList.remove("is-dragover");
-  }
-
-  _onMembersDropUI(event) {
-    event.preventDefault();
-    const dropZone = event.currentTarget;
-    dropZone.classList.remove("is-dragover");
-  }
-
   async _onDropActor(event, actor) {
-    const target = event.target instanceof HTMLElement ? event.target : null;
-    const dropZone = target?.closest("[data-drop-zone='members']");
-
-    if (!dropZone) return null;
+    const dropZoneId = getClosestDropZoneId(event);
+    if (dropZoneId !== "members") return null;
 
     if (!this.canEditDocument) {
       ui.notifications?.warn(game.i18n.localize("WET.Group.Members.Notifications.DropLocked"));
