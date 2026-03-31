@@ -36,6 +36,7 @@
 }
 
 .wet-vehicle-column--right {
+  display: flex;
   min-height: 0;
 }
 
@@ -85,8 +86,10 @@
 
 .wet-vehicle-passengers-panel {
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 100%;
+  width: 100%;
 }
 
 .wet-vehicle-passengers-panel__header {
@@ -120,8 +123,9 @@
 .wet-vehicle-passengers-drop {
   display: flex;
   flex: 1 1 auto;
+  align-self: stretch;
+  width: 100%;
   min-height: 320px;
-  max-height: 420px;
   min-width: 0;
   overflow: auto;
 }
@@ -259,8 +263,8 @@
     max-width: 360px;
   }
 
-  .wet-vehicle-passengers-drop {
-    max-height: 360px;
+  .wet-vehicle-column--right {
+    display: block;
   }
 }
 
