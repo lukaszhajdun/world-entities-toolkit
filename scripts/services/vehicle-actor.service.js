@@ -24,6 +24,9 @@ const DISALLOWED_PASSENGER_TYPES = Object.freeze(new Set([
   ACTOR_TYPES.VEHICLE
 ]));
 
+const VEHICLE_PASSENGER_TRANSFER_DATA_KEY = "wetVehiclePassengerTransfer";
+const VEHICLE_PASSENGER_TRANSFER_TYPE = "WETVehiclePassengerTransfer";
+
 function hasStoredActorReference(reference) {
   if (!reference || typeof reference !== "object") return false;
 
@@ -62,6 +65,10 @@ function isPassengerDisallowedActor(actor) {
   return DISALLOWED_PASSENGER_TYPES.has(normalizeActorTypeKey(actor.type));
 }
 
+function isDriverDisallowedActor(actor) {
+  return isPassengerDisallowedActor(actor);
+}
+
 function getVehiclePassengersArray(actor) {
   return Array.isArray(actor?.system?.passengers) ? [...actor.system.passengers] : [];
 }
@@ -74,26 +81,9 @@ function hasActorReferenceInList(references, candidateReference) {
   return references.some(reference => isSameActorReference(reference, candidateReference));
 }
 
-async function getEligibleGroupPassengerActors(vehicleActor, groupActor) {
-  const currentPassengers = getVehiclePassengersArray(vehicleActor);
-  const groupMembers = getGroupMembersArray(groupActor);
-  const eligibleActors = [];
-  const selectedReferences = [];
-
-  for (const memberReference of groupMembers) {
-    const resolvedActor = await resolveActorReference(memberReference);
-    if (!resolvedActor || resolvedActor.documentName !== "Actor") continue;
-    if (isPassengerDisallowedActor(resolvedActor)) continue;
-
-    const resolvedReference = createActorReference(resolvedActor);
-    if (hasActorReferenceInList(currentPassengers, resolvedReference)) continue;
-    if (hasActorReferenceInList(selectedReferences, resolvedReference)) continue;
-
-    eligibleActors.push(resolvedActor);
-    selectedReferences.push(resolvedReference);
-  }
-
-  return eligibleActors;
+function getPassengerIndexByReference(actor, candidateReference) {
+  const passengers = getVehiclePassengersArray(actor);
+  return passengers.findIndex(passenger => isSameActorReference(passenger, candidateReference));
 }
 
 function getResolvedActorPresentation(reference, resolved, fallbackNameKey) {
@@ -122,12 +112,105 @@ export function getVehicleOwnerReference(actor) {
   return reference;
 }
 
+export function getVehicleDriverReference(actor) {
+  const reference = actor?.system?.driver?.actor;
+  if (!hasStoredActorReference(reference)) return null;
+  return reference;
+}
+
+export function getVehicleOccupancyCount(actor) {
+  const passengersCount = getVehiclePassengersArray(actor).length;
+  const driverCount = getVehicleDriverReference(actor) ? 1 : 0;
+  return passengersCount + driverCount;
+}
+
 export async function prepareVehicleOwner(actor) {
   const reference = getVehicleOwnerReference(actor);
   if (!reference) return null;
 
   const resolved = await resolveActorReference(reference);
   return getResolvedActorPresentation(reference, resolved, "WET.Vehicle.Owner.UnknownName");
+}
+
+export async function prepareVehicleDriver(actor) {
+  const reference = getVehicleDriverReference(actor);
+  if (!reference) return null;
+
+  const resolved = await resolveActorReference(reference);
+  return getResolvedActorPresentation(reference, resolved, "WET.Vehicle.Driver.UnknownName");
+}
+
+export function createVehiclePassengerTransferDragData(actor, passengerIndex) {
+  if (!actor || actor.documentName !== "Actor") {
+    throw new Error("createVehiclePassengerTransferDragData expected an Actor document.");
+  }
+
+  if (!Number.isInteger(passengerIndex)) {
+    throw new Error("createVehiclePassengerTransferDragData expected a passenger index.");
+  }
+
+  return {
+    type: VEHICLE_PASSENGER_TRANSFER_TYPE,
+    [VEHICLE_PASSENGER_TRANSFER_DATA_KEY]: {
+      sourceActorUuid: actor.uuid ?? "",
+      sourceActorId: actor.id ?? "",
+      passengerIndex
+    }
+  };
+}
+
+export function isVehiclePassengerTransferDragData(dragData) {
+  return Boolean(dragData?.[VEHICLE_PASSENGER_TRANSFER_DATA_KEY]);
+}
+
+export async function assignVehicleDriverFromPassengerIndex(actor, passengerIndex) {
+  if (!actor || actor.documentName !== "Actor") {
+    return { status: "invalid" };
+  }
+
+  if (!Number.isInteger(passengerIndex)) {
+    return { status: "invalid" };
+  }
+
+  const passengers = getVehiclePassengersArray(actor);
+  if (passengerIndex < 0 || passengerIndex >= passengers.length) {
+    return { status: "missingPassenger" };
+  }
+
+  const passengerReference = passengers[passengerIndex];
+  if (!hasStoredActorReference(passengerReference)) {
+    return { status: "missingPassenger" };
+  }
+
+  const currentDriver = getVehicleDriverReference(actor);
+
+  if (currentDriver) {
+    passengers[passengerIndex] = currentDriver;
+
+    await actor.update({
+      "system.driver.actor": passengerReference,
+      "system.passengers": passengers
+    });
+
+    return {
+      status: "swapped",
+      driver: passengerReference
+    };
+  }
+
+  passengers.splice(passengerIndex, 1);
+
+  await actor.update({
+    "system.driver.actor": passengerReference,
+    "system.passengers": passengers
+  });
+
+  return {
+    status: "assigned",
+    driver: passengerReference,
+    capacity: getVehiclePassengerCapacity(actor),
+    count: passengers.length + 1
+  };
 }
 
 export async function assignVehicleOwner(actor, candidateActor) {
@@ -153,11 +236,67 @@ export async function assignVehicleOwner(actor, candidateActor) {
   };
 }
 
+export async function assignVehicleDriver(actor, candidateActor) {
+  if (!actor || actor.documentName !== "Actor") {
+    return { status: "invalid" };
+  }
+
+  if (!candidateActor || candidateActor.documentName !== "Actor") {
+    return { status: "invalid" };
+  }
+
+  if (isDriverDisallowedActor(candidateActor)) {
+    return { status: "invalidType" };
+  }
+
+  if (hasVehicleDriver(actor, candidateActor)) {
+    return { status: "alreadyDriver" };
+  }
+
+  if (getVehicleDriverReference(actor)) {
+    return { status: "occupied" };
+  }
+
+  if (hasVehiclePassenger(actor, candidateActor)) {
+    return { status: "alreadyPassenger" };
+  }
+
+  const capacity = getVehiclePassengerCapacity(actor);
+  const occupancyCount = getVehicleOccupancyCount(actor);
+
+  if (occupancyCount >= capacity) {
+    return {
+      status: "full",
+      capacity,
+      count: occupancyCount
+    };
+  }
+
+  await actor.update({
+    "system.driver.actor": createActorReference(candidateActor)
+  });
+
+  return {
+    status: "assigned",
+    driver: candidateActor,
+    capacity,
+    count: occupancyCount + 1
+  };
+}
+
 export async function clearVehicleOwner(actor) {
   if (!actor || actor.documentName !== "Actor") return;
 
   await actor.update({
     "system.owner.actor": { ...EMPTY_ACTOR_REFERENCE }
+  });
+}
+
+export async function clearVehicleDriver(actor) {
+  if (!actor || actor.documentName !== "Actor") return;
+
+  await actor.update({
+    "system.driver.actor": { ...EMPTY_ACTOR_REFERENCE }
   });
 }
 
@@ -185,17 +324,51 @@ export function hasVehiclePassenger(actor, candidateActor) {
   return passengers.some(passenger => isSameActorReference(passenger, candidateReference));
 }
 
+export function hasVehicleDriver(actor, candidateActor) {
+  if (!candidateActor || candidateActor.documentName !== "Actor") return false;
+
+  const driverReference = getVehicleDriverReference(actor);
+  if (!driverReference) return false;
+
+  return isSameActorReference(driverReference, createActorReference(candidateActor));
+}
+
+async function getEligibleGroupPassengerActors(vehicleActor, groupActor) {
+  const currentPassengers = getVehiclePassengersArray(vehicleActor);
+  const currentDriver = getVehicleDriverReference(vehicleActor);
+  const groupMembers = getGroupMembersArray(groupActor);
+  const eligibleActors = [];
+  const selectedReferences = [];
+
+  for (const memberReference of groupMembers) {
+    const resolvedActor = await resolveActorReference(memberReference);
+    if (!resolvedActor || resolvedActor.documentName !== "Actor") continue;
+    if (isPassengerDisallowedActor(resolvedActor)) continue;
+
+    const resolvedReference = createActorReference(resolvedActor);
+    if (currentDriver && isSameActorReference(currentDriver, resolvedReference)) continue;
+    if (hasActorReferenceInList(currentPassengers, resolvedReference)) continue;
+    if (hasActorReferenceInList(selectedReferences, resolvedReference)) continue;
+
+    eligibleActors.push(resolvedActor);
+    selectedReferences.push(resolvedReference);
+  }
+
+  return eligibleActors;
+}
+
 async function addVehiclePassengerGroup(vehicleActor, groupActor) {
   const passengers = getVehiclePassengersArray(vehicleActor);
   const capacity = getVehiclePassengerCapacity(vehicleActor);
-  const freeSeats = Math.max(0, capacity - passengers.length);
+  const occupiedCount = getVehicleOccupancyCount(vehicleActor);
+  const freeSeats = Math.max(0, capacity - occupiedCount);
   const eligibleActors = await getEligibleGroupPassengerActors(vehicleActor, groupActor);
 
   if (eligibleActors.length === 0) {
     return {
       status: "groupNoEligible",
       capacity,
-      count: passengers.length
+      count: occupiedCount
     };
   }
 
@@ -205,7 +378,7 @@ async function addVehiclePassengerGroup(vehicleActor, groupActor) {
       needed: eligibleActors.length,
       available: freeSeats,
       capacity,
-      count: passengers.length
+      count: occupiedCount
     };
   }
 
@@ -220,7 +393,7 @@ async function addVehiclePassengerGroup(vehicleActor, groupActor) {
     status: "groupAdded",
     addedCount: eligibleActors.length,
     capacity,
-    count: nextPassengers.length,
+    count: nextPassengers.length + (getVehicleDriverReference(vehicleActor) ? 1 : 0),
     group: groupActor
   };
 }
@@ -242,18 +415,23 @@ export async function addVehiclePassenger(actor, candidateActor) {
     return { status: "invalidType" };
   }
 
+  if (hasVehicleDriver(actor, candidateActor)) {
+    return { status: "driverDuplicate" };
+  }
+
   if (hasVehiclePassenger(actor, candidateActor)) {
     return { status: "duplicate" };
   }
 
   const passengers = getVehiclePassengersArray(actor);
   const capacity = getVehiclePassengerCapacity(actor);
+  const occupancyCount = getVehicleOccupancyCount(actor);
 
-  if (passengers.length >= capacity) {
+  if (occupancyCount >= capacity) {
     return {
       status: "full",
       capacity,
-      count: passengers.length
+      count: occupancyCount
     };
   }
 
@@ -265,7 +443,7 @@ export async function addVehiclePassenger(actor, candidateActor) {
     status: "added",
     passenger: candidateActor,
     capacity,
-    count: passengers.length
+    count: occupancyCount + 1
   };
 }
 

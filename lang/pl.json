@@ -100,7 +100,23 @@
           "MissingActor": "Nie udało się odnaleźć powiązanego aktora pasażera.",
           "GroupAdded": "Dozwoleni członkowie grupy zostali dodani jako pasażerowie.",
           "GroupNoEligible": "Ta grupa nie ma żadnych kwalifikujących się członków do dodania.",
-          "GroupFull": "Ta grupa nie mieści się w dostępnych miejscach. Nie dodano żadnych pasażerów."
+          "GroupFull": "Ta grupa nie mieści się w dostępnych miejscach. Nie dodano żadnych pasażerów.",
+          "AlreadyDriver": "Ten aktor jest już kierowcą."
+        }
+      },
+      "Driver": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora",
+        "Notifications": {
+          "Assigned": "Kierowca został przypisany.",
+          "AlreadyAssigned": "Ten aktor jest już kierowcą.",
+          "AlreadyPassenger": "Ten aktor jest już pasażerem. Usuń go najpierw z pasażerów, aby przypisać go jako kierowcę.",
+          "Occupied": "Ten pojazd ma już kierowcę. Usuń obecnego kierowcę przed przypisaniem nowego.",
+          "DropLocked": "Odblokuj edycję, aby przypisać kierowcę.",
+          "InvalidDrop": "W to miejsce można upuszczać tylko aktorów.",
+          "InvalidType": "Grupy, frakcje i pojazdy nie mogą być kierowcą.",
+          "Full": "W pojeździe nie ma już wolnego miejsca dla kierowcy.",
+          "MissingActor": "Nie udało się odnaleźć powiązanego aktora kierowcy."
         }
       }
     },
@@ -166,15 +182,18 @@
           "Maneuverability": "Zwrotność",
           "Damage": "Obrażenia",
           "Armor": "Pancerz",
-          "PassengerCount": "Obłożenie"
+          "PassengerCount": "Obłożenie",
+          "Driver": "Kierowca"
         },
         "Actions": {
           "ClearOwner": "Usuń właściciela",
-          "RemovePassenger": "Usuń pasażera"
+          "RemovePassenger": "Usuń pasażera",
+          "ClearDriver": "Usuń kierowcę"
         },
         "Empty": {
           "Owner": "Nie przypisano jeszcze właściciela. Przeciągnij tutaj aktora.",
-          "Passengers": "Nie dodano jeszcze pasażerów. Przeciągnij tutaj aktorów."
+          "Passengers": "Nie dodano jeszcze pasażerów. Przeciągnij tutaj aktorów.",
+          "Driver": "Nie przypisano jeszcze kierowcy. Przeciągnij tutaj aktora."
         },
         "Placeholders": {
           "Name": "Nazwa pojazdu",

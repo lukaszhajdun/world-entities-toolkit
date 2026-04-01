@@ -36,7 +36,8 @@
 }
 
 .wet-vehicle-column--right {
-  display: flex;
+  display: grid;
+  grid-template-rows: auto 1fr;
   min-height: 0;
 }
 
@@ -46,6 +47,7 @@
 .wet-vehicle-owner-panel,
 .wet-vehicle-state-panel,
 .wet-vehicle-stats-panel,
+.wet-vehicle-driver-panel,
 .wet-vehicle-passengers-panel,
 .wet-vehicle-text-panel {
   min-width: 0;
@@ -86,10 +88,8 @@
 
 .wet-vehicle-passengers-panel {
   display: flex;
-  flex: 1 1 auto;
   flex-direction: column;
-  min-height: 100%;
-  width: 100%;
+  min-height: 0;
 }
 
 .wet-vehicle-passengers-panel__header {
@@ -107,13 +107,15 @@
   white-space: nowrap;
 }
 
-.wet-vehicle-owner-drop {
+.wet-vehicle-owner-drop,
+.wet-vehicle-driver-drop {
   display: flex;
   min-height: 74px;
   min-width: 0;
 }
 
-.wet-vehicle-owner-drop__empty {
+.wet-vehicle-owner-drop__empty,
+.wet-vehicle-driver-drop__empty {
   width: 100%;
   min-height: 74px;
   display: flex;
@@ -264,7 +266,11 @@
   }
 
   .wet-vehicle-column--right {
-    display: block;
+    grid-template-rows: auto auto;
+  }
+
+  .wet-vehicle-passengers-drop {
+    max-height: 360px;
   }
 }
 

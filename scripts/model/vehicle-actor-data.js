@@ -18,6 +18,9 @@ export class VehicleActorData extends foundry.abstract.TypeDataModel {
       owner: new SchemaField({
         actor: createActorReferenceSchema()
       }),
+      driver: new SchemaField({
+        actor: createActorReferenceSchema()
+      }),
       passengers: createActorReferenceArrayField(),
       details: new SchemaField({
         vehicleType: createStringField(),

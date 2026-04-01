@@ -3,12 +3,21 @@ import {
   MODULE_ID
 } from "../core/constants.js";
 import { getQualifiedActorType } from "../model/register-models.js";
+import { getDragDataFromEvent } from "../services/dragdrop.service.js";
 import {
   addVehiclePassenger,
+  assignVehicleDriver,
+  assignVehicleDriverFromPassengerIndex,
   assignVehicleOwner,
+  clearVehicleDriver,
   clearVehicleOwner,
+  createVehiclePassengerTransferDragData,
+  getVehicleDriverReference,
+  getVehicleOccupancyCount,
   getVehicleOwnerReference,
   getVehiclePassengerCapacity,
+  isVehiclePassengerTransferDragData,
+  prepareVehicleDriver,
   prepareVehicleOwner,
   prepareVehiclePassengers,
   removeVehiclePassengerByIndex
@@ -58,28 +67,33 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
   }
 
   _getDropZoneIds() {
-    return ["owner", "passengers"];
+    return ["owner", "driver", "passengers"];
   }
 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
-    const [ownerData, passengers] = await Promise.all([
+    const [ownerData, driverData, passengers] = await Promise.all([
       prepareVehicleOwner(this.actor),
+      prepareVehicleDriver(this.actor),
       prepareVehiclePassengers(this.actor)
     ]);
 
     const passengerCapacity = getVehiclePassengerCapacity(this.actor);
     const passengersCount = passengers.length;
+    const occupancyCount = getVehicleOccupancyCount(this.actor);
 
     return foundry.utils.mergeObject(
       context,
       {
         ownerData,
         hasOwner: Boolean(ownerData),
+        driverData,
+        hasDriver: Boolean(driverData),
         passengers,
         hasPassengers: passengersCount > 0,
         passengersCount,
-        passengerCapacity
+        passengerCapacity,
+        occupancyCount
       },
       { inplace: false }
     );
@@ -89,6 +103,7 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     await super._onRender(context, options);
     this._attachPortraitListeners();
     this._attachOwnerListeners();
+    this._attachDriverListeners();
     this._attachPassengerListeners();
   }
 
@@ -115,9 +130,26 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     }
   }
 
+  _attachDriverListeners() {
+    const form = this.form;
+    if (!form) return;
+
+    for (const button of form.querySelectorAll("[data-driver-open]")) {
+      button.addEventListener("click", this._onDriverOpen.bind(this));
+    }
+
+    for (const button of form.querySelectorAll("[data-driver-clear]")) {
+      button.addEventListener("click", this._onDriverClear.bind(this));
+    }
+  }
+
   _attachPassengerListeners() {
     const form = this.form;
     if (!form) return;
+
+    for (const row of form.querySelectorAll("[data-passenger-drag]")) {
+      row.addEventListener("dragstart", this._onPassengerDragStart.bind(this));
+    }
 
     for (const button of form.querySelectorAll("[data-passenger-open]")) {
       button.addEventListener("click", this._onPassengerOpen.bind(this));
@@ -125,6 +157,51 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
 
     for (const button of form.querySelectorAll("[data-passenger-remove]")) {
       button.addEventListener("click", this._onPassengerRemove.bind(this));
+    }
+  }
+
+  _onDropZoneUiDrop(dropZoneId, event) {
+    if (dropZoneId !== "driver") return;
+
+    const dragData = getDragDataFromEvent(event);
+    if (!isVehiclePassengerTransferDragData(dragData)) return;
+
+    event.stopPropagation();
+    void this._handlePassengerTransferToDriver(dragData);
+  }
+
+  async _handlePassengerTransferToDriver(dragData) {
+    if (!this.canEditDocument) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.DropLocked"));
+      return null;
+    }
+
+    const transfer = dragData?.wetVehiclePassengerTransfer;
+    if (!transfer || typeof transfer !== "object") {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
+      return null;
+    }
+
+    const sameActor = transfer.sourceActorUuid
+      ? transfer.sourceActorUuid === this.actor?.uuid
+      : transfer.sourceActorId === this.actor?.id;
+
+    if (!sameActor) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
+      return null;
+    }
+
+    const result = await assignVehicleDriverFromPassengerIndex(this.actor, Number(transfer.passengerIndex));
+
+    switch (result.status) {
+      case "assigned":
+      case "swapped":
+        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Driver.Notifications.Assigned"));
+        return this.actor;
+
+      default:
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
+        return null;
     }
   }
 
@@ -147,12 +224,28 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     await picker.browse(initialTarget);
   }
 
+  _onPassengerDragStart(event) {
+    if (!this.canEditDocument || !event.dataTransfer) return;
+
+    const row = event.currentTarget;
+    const index = Number(row.dataset.passengerIndex);
+    if (!Number.isInteger(index)) return;
+
+    const dragData = createVehiclePassengerTransferDragData(this.actor, index);
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+  }
+
   async _onDropActor(event, actor) {
     const dropZoneId = getClosestDropZoneId(event);
 
     switch (dropZoneId) {
       case "owner":
         return this._handleOwnerDrop(actor);
+
+      case "driver":
+        return this._handleDriverDrop(actor);
 
       case "passengers":
         return this._handlePassengerDrop(actor);
@@ -185,6 +278,46 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     }
   }
 
+  async _handleDriverDrop(actor) {
+    if (!this.canEditDocument) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.DropLocked"));
+      return null;
+    }
+
+    const result = await assignVehicleDriver(this.actor, actor);
+
+    switch (result.status) {
+      case "assigned":
+      case "swapped":
+        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Driver.Notifications.Assigned"));
+        return actor;
+
+      case "alreadyDriver":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.AlreadyAssigned"));
+        return null;
+
+      case "alreadyPassenger":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.AlreadyPassenger"));
+        return null;
+
+      case "occupied":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.Occupied"));
+        return null;
+
+      case "invalidType":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidType"));
+        return null;
+
+      case "full":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.Full"));
+        return null;
+
+      default:
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
+        return null;
+    }
+  }
+
   async _handlePassengerDrop(actor) {
     if (!this.canEditDocument) {
       ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.DropLocked"));
@@ -204,6 +337,10 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
 
       case "duplicate":
         ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.AlreadyAdded"));
+        return null;
+
+      case "driverDuplicate":
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.AlreadyDriver"));
         return null;
 
       case "groupNoEligible":
@@ -245,6 +382,25 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     if (!this.canEditDocument) return;
 
     await clearVehicleOwner(this.actor);
+  }
+
+  async _onDriverOpen(event) {
+    event.preventDefault();
+
+    const driverReference = getVehicleDriverReference(this.actor);
+    if (!driverReference) return;
+
+    const opened = await openActorReference(driverReference);
+    if (!opened) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.MissingActor"));
+    }
+  }
+
+  async _onDriverClear(event) {
+    event.preventDefault();
+    if (!this.canEditDocument) return;
+
+    await clearVehicleDriver(this.actor);
   }
 
   async _onPassengerOpen(event) {

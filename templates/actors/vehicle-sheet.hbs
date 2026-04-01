@@ -242,6 +242,76 @@
       </div>
 
       <div class="wet-vehicle-column wet-vehicle-column--right">
+        <section class="wet-sheet__section wet-vehicle-driver-panel">
+          <div class="wet-field">
+            <div
+              class="wet-field__label wet-field__label--section"
+              role="heading"
+              aria-level="2"
+            >
+              {{localize "WET.Sheets.Vehicle.Fields.Driver"}}
+            </div>
+
+            <div
+              class="wet-vehicle-driver-drop wet-drop-zone"
+              data-drop-zone="driver"
+            >
+              {{#if hasDriver}}
+                <article class="wet-owner-card {{#unless driverData.exists}}wet-owner-card--missing{{/unless}}">
+                  <button
+                    class="wet-owner-card__main"
+                    type="button"
+                    data-driver-open="true"
+                  >
+                    <span class="wet-owner-card__media">
+                      <span class="wet-owner-card__thumb">
+                        <img
+                          class="wet-owner-card__image"
+                          src="{{driverData.img}}"
+                          alt="{{driverData.name}}"
+                        >
+                      </span>
+                    </span>
+
+                    <span class="wet-owner-card__content">
+                      <span class="wet-owner-card__name">{{driverData.name}}</span>
+
+                      {{#if driverData.typeLabel}}
+                        <span class="wet-owner-card__meta wet-muted">{{driverData.typeLabel}}</span>
+                      {{/if}}
+
+                      {{#unless driverData.exists}}
+                        <span class="wet-owner-card__missing wet-muted">
+                          {{localize "WET.Vehicle.Driver.MissingActorLabel"}}
+                        </span>
+                      {{/unless}}
+                    </span>
+                  </button>
+
+                  <div class="wet-owner-card__actions">
+                    <button
+                      class="wet-inline-icon-button"
+                      type="button"
+                      title="{{localize "WET.Sheets.Vehicle.Actions.ClearDriver"}}"
+                      aria-label="{{localize "WET.Sheets.Vehicle.Actions.ClearDriver"}}"
+                      data-driver-clear="true"
+                      {{#unless @root.canEdit}}disabled{{/unless}}
+                    >
+                      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </article>
+              {{else}}
+                <div class="wet-empty-state wet-vehicle-driver-drop__empty">
+                  <p class="wet-empty-state__text">
+                    {{localize "WET.Sheets.Vehicle.Empty.Driver"}}
+                  </p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </section>
+
         <section class="wet-sheet__section wet-vehicle-passengers-panel">
           <div class="wet-vehicle-passengers-panel__header">
             <div
@@ -254,7 +324,7 @@
 
             <div class="wet-vehicle-passengers-panel__count">
               <span class="wet-muted">{{localize "WET.Sheets.Vehicle.Fields.PassengerCount"}}</span>
-              <strong>{{passengersCount}} / {{passengerCapacity}}</strong>
+              <strong>{{occupancyCount}} / {{passengerCapacity}}</strong>
             </div>
           </div>
 
@@ -265,7 +335,12 @@
             {{#if hasPassengers}}
               <div class="wet-passenger-list">
                 {{#each passengers}}
-                  <article class="wet-passenger-card {{#unless this.exists}}wet-passenger-card--missing{{/unless}}">
+                  <article
+                    class="wet-passenger-card {{#unless this.exists}}wet-passenger-card--missing{{/unless}}"
+                    data-passenger-drag="true"
+                    data-passenger-index="{{this.index}}"
+                    draggable="{{#if @root.canEdit}}true{{else}}false{{/if}}"
+                  >
                     <button
                       class="wet-passenger-card__main"
                       type="button"

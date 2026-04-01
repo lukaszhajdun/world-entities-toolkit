@@ -100,7 +100,23 @@
           "MissingActor": "The linked passenger actor could not be found.",
           "GroupAdded": "Eligible group members added as passengers.",
           "GroupNoEligible": "This group has no eligible members to add.",
-          "GroupFull": "This group does not fit in the available seats. No passengers were added."
+          "GroupFull": "This group does not fit in the available seats. No passengers were added.",
+          "AlreadyDriver": "This actor is already the driver."
+        }
+      },
+      "Driver": {
+        "UnknownName": "Unknown Actor",
+        "MissingActorLabel": "Actor not found",
+        "Notifications": {
+          "Assigned": "Driver assigned.",
+          "AlreadyAssigned": "This actor is already the driver.",
+          "AlreadyPassenger": "This actor is already a passenger. Remove them from passengers before assigning a driver.",
+          "Occupied": "This vehicle already has a driver. Clear the current driver first.",
+          "DropLocked": "Unlock editing before assigning a driver.",
+          "InvalidDrop": "Only actor documents can be dropped here.",
+          "InvalidType": "Groups, factions, and vehicles cannot be drivers.",
+          "Full": "There is no free seat available for a driver.",
+          "MissingActor": "The linked driver actor could not be found."
         }
       }
     },
@@ -166,15 +182,18 @@
           "Maneuverability": "Maneuverability",
           "Damage": "Damage",
           "Armor": "Armor",
-          "PassengerCount": "Occupancy"
+          "PassengerCount": "Occupancy",
+          "Driver": "Driver"
         },
         "Actions": {
           "ClearOwner": "Clear owner",
-          "RemovePassenger": "Remove passenger"
+          "RemovePassenger": "Remove passenger",
+          "ClearDriver": "Clear driver"
         },
         "Empty": {
           "Owner": "No owner assigned yet. Drag an actor here.",
-          "Passengers": "No passengers assigned yet. Drag actors here."
+          "Passengers": "No passengers assigned yet. Drag actors here.",
+          "Driver": "No driver assigned yet. Drag an actor here."
         },
         "Placeholders": {
           "Name": "Vehicle name",
