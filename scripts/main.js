@@ -9,12 +9,30 @@ import {
 import { logger } from "./core/logger.js";
 import { registerGroupActorSheet } from "./apps/group-actor-sheet.js";
 import { registerVehicleActorSheet } from "./apps/vehicle-actor-sheet.js";
+import { openStorageWindow } from "./apps/storage-window.js";
 import { registerActorDataModels } from "./model/register-models.js";
+import {
+  getStorageDragDataFromEvent,
+  isStorageTransferDragData,
+  moveStorageItemFromDragData
+} from "./services/storage-transfer.service.js";
 import * as settingsApi from "./settings/access.js";
 import { registerSettings } from "./settings/register.js";
 
 const GROUP_ACTOR_PLACEHOLDER = `modules/${MODULE_ID}/assets/placeholders/group-actor.webp`;
 const VEHICLE_ACTOR_PLACEHOLDER = `modules/${MODULE_ID}/assets/placeholders/vehicle-actor.webp`;
+
+async function openStorageViaApi(actorOrUuid, slotId) {
+  const actor = typeof actorOrUuid === "string"
+    ? await fromUuid(actorOrUuid)
+    : actorOrUuid;
+
+  if (actor?.documentName !== "Actor") {
+    throw new Error("storage.open expected an Actor document or Actor UUID.");
+  }
+
+  return openStorageWindow(actor, slotId);
+}
 
 function buildApi() {
   return Object.freeze({
@@ -27,6 +45,9 @@ function buildApi() {
       get: settingsApi.getSetting,
       set: settingsApi.setSetting,
       has: settingsApi.hasSetting
+    }),
+    storage: Object.freeze({
+      open: openStorageViaApi
     })
   });
 }
@@ -54,6 +75,55 @@ function applyActorPlaceholder(updateData, actor, placeholderPath) {
     updateData.prototypeToken.texture = {
       src: placeholderPath
     };
+  }
+}
+
+function getDropTargetActorSheet(event) {
+  const target = event.target instanceof HTMLElement ? event.target : null;
+  if (!target) return null;
+  if (target.closest(".wet-storage-window")) return null;
+
+  const appElement = target.closest("[data-appid]");
+  const appId = Number(appElement?.dataset?.appid);
+  if (!Number.isInteger(appId)) return null;
+
+  const app = ui.windows?.[appId] ?? null;
+  if (!app?.document || app.document.documentName !== "Actor") return null;
+
+  return app;
+}
+
+async function onGlobalStorageItemDrop(event) {
+  if (event.defaultPrevented) return;
+
+  const dragData = getStorageDragDataFromEvent(event);
+  if (!isStorageTransferDragData(dragData)) return;
+
+  const targetSheet = getDropTargetActorSheet(event);
+  if (!targetSheet) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+
+  const result = await moveStorageItemFromDragData(dragData, targetSheet.document);
+
+  switch (result.status) {
+    case "movedWithinActor":
+    case "movedToActor":
+      ui.notifications?.info(game.i18n.localize("WET.Storage.Notifications.ItemMovedToActor"));
+      break;
+
+    case "locked":
+      ui.notifications?.warn(game.i18n.localize("WET.Storage.Notifications.StorageLocked"));
+      break;
+
+    case "targetNotOwned":
+      ui.notifications?.warn(game.i18n.localize("WET.Storage.Notifications.TargetActorNotOwned"));
+      break;
+
+    default:
+      ui.notifications?.warn(game.i18n.localize("WET.Storage.Notifications.MoveToActorFailed"));
+      break;
   }
 }
 
@@ -95,5 +165,6 @@ Hooks.once("setup", () => {
 });
 
 Hooks.once("ready", () => {
+  document.addEventListener("drop", onGlobalStorageItemDrop, true);
   logger.info(game.i18n.localize(`${LOCALIZATION_PREFIX}.Log.Ready`));
 });

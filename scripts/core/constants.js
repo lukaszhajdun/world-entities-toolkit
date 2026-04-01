@@ -80,6 +80,12 @@ export const ACTOR_FLAGS = Object.freeze({
   EDIT_LOCKED: "editLocked"
 });
 
+export const ITEM_FLAGS = Object.freeze({
+  STORAGE_SLOT_ID: "storageSlotId"
+});
+
+export const STORAGE_TRANSFER_DATA_KEY = "wetStorageTransfer";
+
 export const CSS_CLASSES = Object.freeze({
   ROOT: MODULE_ID
 });

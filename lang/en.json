@@ -184,6 +184,54 @@
           "Issues": "List faults, damage, and maintenance notes..."
         }
       }
+    },
+    "Storage": {
+      "Window": {
+        "Title": "{storage} — {actor}",
+        "TitleFallback": "Storage"
+      },
+      "Sections": {
+        "Items": "Items"
+      },
+      "Fields": {
+        "Storage": "Storage",
+        "HostActor": "Host Actor",
+        "Capacity": "Capacity",
+        "ItemCount": "Items"
+      },
+      "Slots": {
+        "Trunk": {
+          "Label": "Trunk Storage",
+          "SectionLabel": "Trunk"
+        },
+        "Unknown": "Storage"
+      },
+      "Actions": {
+        "RemoveItem": "Remove item"
+      },
+      "Empty": {
+        "Items": "No items have been stored yet. Drag items here.",
+        "Capacity": "—"
+      },
+      "Hints": {
+        "Locked": "This host is locked. You can browse the storage, but item changes are disabled."
+      },
+      "Items": {
+        "Unnamed": "Unnamed Item"
+      },
+      "Notifications": {
+        "InvalidDrop": "Only item drops are supported here.",
+        "StorageLocked": "Unlock editing on the host actor to modify this storage.",
+        "StorageDisabled": "This storage is currently disabled.",
+        "ItemCopiedToStorage": "Item copied to storage.",
+        "ItemMovedToStorage": "Item moved to storage.",
+        "ItemAlreadyInStorage": "This item is already stored here.",
+        "ItemRemoved": "Item removed from storage.",
+        "MissingItem": "The linked item could not be found.",
+        "ItemMovedToActor": "Item moved out of storage.",
+        "MoveToActorFailed": "The item could not be moved to that actor.",
+        "TargetActorNotOwned": "You do not have permission to add items to that actor."
+      }
     }
   },
   "TYPES": {

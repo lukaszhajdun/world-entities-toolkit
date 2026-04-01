@@ -5,7 +5,10 @@ import {
   createStringField
 } from "./common-fields.js";
 
-const { SchemaField } = foundry.data.fields;
+const {
+  BooleanField,
+  SchemaField
+} = foundry.data.fields;
 
 export class VehicleActorData extends foundry.abstract.TypeDataModel {
   static LOCALIZATION_PREFIXES = ["WET.DataModels.Vehicle"];
@@ -26,6 +29,12 @@ export class VehicleActorData extends foundry.abstract.TypeDataModel {
         maneuverability: createIntegerField(),
         damage: createIntegerField(),
         armor: createIntegerField()
+      }),
+      storage: new SchemaField({
+        trunk: new SchemaField({
+          enabled: new BooleanField({ required: true, initial: true }),
+          capacity: createStringField()
+        })
       }),
       summary: new SchemaField({
         description: createStringField(),

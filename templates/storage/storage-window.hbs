@@ -1,0 +1,102 @@
+<div class="wet-storage {{cssClass}}" data-storage-root="true">
+  <section class="wet-sheet__section wet-storage__controls-panel">
+    <div class="wet-storage__controls-row">
+      <div class="wet-field wet-storage__capacity-field">
+        <label class="wet-field__label" for="{{rootId}}-storage-capacity">
+          {{localize "WET.Storage.Fields.Capacity"}}
+        </label>
+        <input
+          id="{{rootId}}-storage-capacity"
+          class="wet-field__input"
+          type="text"
+          value="{{storage.capacity}}"
+          data-storage-capacity-input="true"
+          {{#unless storage.canEdit}}disabled{{/unless}}
+        >
+      </div>
+    </div>
+
+    {{#if storage.isLocked}}
+      <p class="wet-storage__locked-hint wet-muted">
+        {{localize "WET.Storage.Hints.Locked"}}
+      </p>
+    {{/if}}
+  </section>
+
+  <section class="wet-sheet__section wet-storage__items-panel">
+    <div class="wet-storage__items-header">
+      <div
+        class="wet-field__label wet-field__label--section"
+        role="heading"
+        aria-level="2"
+      >
+        {{storage.sectionLabel}}
+      </div>
+
+      <div class="wet-storage__items-count">
+        <span class="wet-muted">{{localize "WET.Storage.Fields.ItemCount"}}</span>
+        <strong>{{storage.itemsCount}}</strong>
+      </div>
+    </div>
+
+    <div class="wet-storage__items-body wet-vehicle-passengers-drop wet-drop-zone" data-storage-drop-zone="true">
+      {{#if storage.hasItems}}
+        <div class="wet-passenger-list wet-storage__item-list">
+          {{#each items}}
+            <article
+              class="wet-passenger-card wet-storage-item"
+              data-storage-item-drag="true"
+              data-item-id="{{this.id}}"
+              draggable="{{#if this.canModify}}true{{else}}false{{/if}}"
+            >
+              <button
+                class="wet-passenger-card__main wet-storage-item__main"
+                type="button"
+                data-storage-item-open="true"
+                data-item-id="{{this.id}}"
+              >
+                <span class="wet-passenger-card__media wet-storage-item__media">
+                  <span class="wet-passenger-card__thumb wet-storage-item__thumb">
+                    <img
+                      class="wet-passenger-card__image wet-storage-item__image"
+                      src="{{this.img}}"
+                      alt="{{this.name}}"
+                    >
+                  </span>
+                </span>
+
+                <span class="wet-passenger-card__content wet-storage-item__content">
+                  <span class="wet-passenger-card__name wet-storage-item__name">{{this.name}}</span>
+
+                  {{#if this.type}}
+                    <span class="wet-passenger-card__meta wet-storage-item__meta wet-muted">{{this.type}}</span>
+                  {{/if}}
+                </span>
+              </button>
+
+              <div class="wet-passenger-card__actions wet-storage-item__actions">
+                <button
+                  class="wet-inline-icon-button"
+                  type="button"
+                  title="{{localize "WET.Storage.Actions.RemoveItem"}}"
+                  aria-label="{{localize "WET.Storage.Actions.RemoveItem"}}"
+                  data-storage-item-remove="true"
+                  data-item-id="{{this.id}}"
+                  {{#unless this.canModify}}disabled{{/unless}}
+                >
+                  <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+              </div>
+            </article>
+          {{/each}}
+        </div>
+      {{else}}
+        <div class="wet-empty-state wet-storage__empty-state">
+          <p class="wet-empty-state__text">
+            {{storage.emptyLabel}}
+          </p>
+        </div>
+      {{/if}}
+    </div>
+  </section>
+</div>

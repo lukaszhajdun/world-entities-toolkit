@@ -18,7 +18,8 @@
   "styles": [
     "styles/base.css",
     "styles/group-sheet.css",
-    "styles/vehicle-sheet.css"
+    "styles/vehicle-sheet.css",
+    "styles/storage-window.css"
   ],
   "languages": [
     {

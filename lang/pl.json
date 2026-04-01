@@ -184,6 +184,54 @@
           "Issues": "Wpisz usterki, uszkodzenia i notatki serwisowe..."
         }
       }
+    },
+    "Storage": {
+      "Window": {
+        "Title": "{storage} — {actor}",
+        "TitleFallback": "Magazyn"
+      },
+      "Sections": {
+        "Items": "Przedmioty"
+      },
+      "Fields": {
+        "Storage": "Magazyn",
+        "HostActor": "Aktor-host",
+        "Capacity": "Pojemność",
+        "ItemCount": "Przedmioty"
+      },
+      "Slots": {
+        "Trunk": {
+          "Label": "Bagażnik",
+          "SectionLabel": "Bagażnik"
+        },
+        "Unknown": "Magazyn"
+      },
+      "Actions": {
+        "RemoveItem": "Usuń przedmiot"
+      },
+      "Empty": {
+        "Items": "Nie przechowujesz tu jeszcze żadnych przedmiotów. Przeciągnij je tutaj.",
+        "Capacity": "—"
+      },
+      "Hints": {
+        "Locked": "Ten host jest zablokowany. Możesz przeglądać magazyn, ale zmiany w przedmiotach są wyłączone."
+      },
+      "Items": {
+        "Unnamed": "Nienazwany przedmiot"
+      },
+      "Notifications": {
+        "InvalidDrop": "W tym miejscu można upuszczać tylko przedmioty.",
+        "StorageLocked": "Odblokuj edycję hosta, aby modyfikować ten magazyn.",
+        "StorageDisabled": "Ten magazyn jest obecnie wyłączony.",
+        "ItemCopiedToStorage": "Przedmiot został skopiowany do magazynu.",
+        "ItemMovedToStorage": "Przedmiot został przeniesiony do magazynu.",
+        "ItemAlreadyInStorage": "Ten przedmiot już znajduje się w tym magazynie.",
+        "ItemRemoved": "Przedmiot został usunięty z magazynu.",
+        "MissingItem": "Nie udało się odnaleźć powiązanego przedmiotu.",
+        "ItemMovedToActor": "Przedmiot został przeniesiony z magazynu.",
+        "MoveToActorFailed": "Nie udało się przenieść przedmiotu do tego aktora.",
+        "TargetActorNotOwned": "Nie masz uprawnień, aby dodać przedmioty do tego aktora."
+      }
     }
   },
   "TYPES": {
