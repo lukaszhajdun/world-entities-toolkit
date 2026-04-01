@@ -182,18 +182,26 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
   }
 
-  async _onDragStart(event) {
-    if (!this.canEditDocument) {
-      return super._onDragStart(event);
+  _getDelegatedDragStartElement(source) {
+    const target = source?.target instanceof Element
+      ? source.target
+      : source instanceof Element
+        ? source
+        : null;
+
+    if (!(target instanceof Element)) return null;
+    return target.closest("[data-role-transfer-source]");
+  }
+
+  async _onDelegatedDragStart(event, dragSource) {
+    const dragData = beginActorRoleTransferDragFromElement(event, this.actor, dragSource);
+    if (!dragData) return false;
+
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = "move";
     }
 
-    const dragData = beginActorRoleTransferDragFromElement(event, this.actor, event.target);
-    if (dragData) {
-      event.stopPropagation();
-      return;
-    }
-
-    return super._onDragStart(event);
+    return true;
   }
 
   async _onDropActor(event, actor) {

@@ -163,6 +163,21 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     return "copy";
   }
 
+  _getDelegatedDragStartElement(source) {
+    const target = source?.target instanceof Element
+      ? source.target
+      : source instanceof Element
+        ? source
+        : null;
+
+    if (!(target instanceof Element)) return null;
+    return target.closest("[data-role-transfer-source]");
+  }
+
+  async _onDelegatedDragStart(_event, _dragSource) {
+    return false;
+  }
+
   _unbindBaseListeners() {
     this.#listenerController?.abort();
     this.#listenerController = null;
@@ -179,6 +194,7 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
     root.addEventListener("click", event => this._onBaseClick(event), { signal });
     root.addEventListener("change", event => this._onBaseChange(event), { signal });
+    root.addEventListener("dragstart", event => void this._onBaseDragStart(event), { signal });
     root.addEventListener("dragenter", event => this._onBaseDragEnter(event), { signal });
     root.addEventListener("dragover", event => this._onBaseDragOver(event), { signal });
     root.addEventListener("dragleave", event => this._onBaseDragLeave(event), { signal });
@@ -207,6 +223,18 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
     if (!element.name?.trim()) return;
     void this._onAutoSaveFieldChangeForElement(element);
+  }
+
+  async _onBaseDragStart(event) {
+    const dragSource = this._getDelegatedDragStartElement(event);
+    if (!dragSource) return;
+    if (!this.canEditDocument) return;
+
+    const handled = await this._onDelegatedDragStart(event, dragSource);
+    if (!handled) return;
+
+    event.stopPropagation();
+    event.stopImmediatePropagation();
   }
 
   _getDropZoneElementFromSource(source) {
