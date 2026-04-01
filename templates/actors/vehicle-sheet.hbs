@@ -100,6 +100,9 @@
             <div
               class="wet-vehicle-owner-drop wet-drop-zone"
               data-drop-zone="owner"
+              data-role-transfer-target="true"
+              data-role-transfer-target-role="owner"
+              data-role-transfer-target-type="slot"
             >
               {{#if hasOwner}}
                 <article class="wet-owner-card {{#unless ownerData.exists}}wet-owner-card--missing{{/unless}}">
@@ -255,9 +258,19 @@
             <div
               class="wet-vehicle-driver-drop wet-drop-zone"
               data-drop-zone="driver"
+              data-role-transfer-target="true"
+              data-role-transfer-target-role="driver"
+              data-role-transfer-target-type="slot"
             >
               {{#if hasDriver}}
-                <article class="wet-owner-card {{#unless driverData.exists}}wet-owner-card--missing{{/unless}}">
+                <article
+                  class="wet-owner-card {{#unless driverData.exists}}wet-owner-card--missing{{/unless}}"
+                  data-uuid="{{driverData.uuid}}"
+                  data-role-transfer-source="true"
+                  data-role-transfer-source-role="driver"
+                  data-role-transfer-source-type="slot"
+                  draggable="{{#if @root.canEdit}}true{{else}}false{{/if}}"
+                >
                   <button
                     class="wet-owner-card__main"
                     type="button"
@@ -331,14 +344,25 @@
           <div
             class="wet-vehicle-passengers-drop wet-drop-zone"
             data-drop-zone="passengers"
+            data-role-transfer-target="true"
+            data-role-transfer-target-role="passengers"
+            data-role-transfer-target-type="list"
           >
             {{#if hasPassengers}}
               <div class="wet-passenger-list">
                 {{#each passengers}}
                   <article
                     class="wet-passenger-card {{#unless this.exists}}wet-passenger-card--missing{{/unless}}"
-                    data-passenger-drag="true"
                     data-passenger-index="{{this.index}}"
+                    data-uuid="{{this.uuid}}"
+                    data-role-transfer-source="true"
+                    data-role-transfer-source-role="passengers"
+                    data-role-transfer-source-type="listItem"
+                    data-role-transfer-source-index="{{this.index}}"
+                    data-role-transfer-target="true"
+                    data-role-transfer-target-role="passengers"
+                    data-role-transfer-target-type="listItem"
+                    data-role-transfer-target-index="{{this.index}}"
                     draggable="{{#if @root.canEdit}}true{{else}}false{{/if}}"
                   >
                     <button

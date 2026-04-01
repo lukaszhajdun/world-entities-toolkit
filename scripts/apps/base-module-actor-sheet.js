@@ -5,11 +5,17 @@ import {
   MODULE_ID
 } from "../core/constants.js";
 import { logger } from "../core/logger.js";
+import {
+  isDragLeavingDropZone,
+  setDropZoneActive
+} from "../services/dragdrop.service.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
 
 export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
+  #listenerController = null;
+
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -119,20 +125,160 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     return filtered;
   }
 
-  async _onRender(context, options) {
-    await super._onRender(context, options);
-    this._attachCommonListeners();
-    this._attachAutoSaveListeners();
+  _canDragStart(_selector) {
+    return this.canEditDocument;
   }
 
-  _attachCommonListeners() {
-    const form = this.form;
-    if (!form) return;
+  _canDragDrop(_selector) {
+    return this.canEditDocument;
+  }
 
-    const lockToggle = form.querySelector("[data-lock-toggle]");
-    if (lockToggle) {
-      lockToggle.addEventListener("click", this._onToggleEditLock.bind(this));
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    this._bindBaseListeners();
+  }
+
+  async close(options = {}) {
+    this._unbindBaseListeners();
+    return super.close(options);
+  }
+
+  _getDropZoneRoot() {
+    return this.form;
+  }
+
+  _getDropZoneIds() {
+    return [];
+  }
+
+  _isTrackedDropZone(dropZoneId) {
+    return this._getDropZoneIds().includes(dropZoneId);
+  }
+
+  _canDragOverDropZone(dropZoneId, _event) {
+    return this.canEditDocument && this._isTrackedDropZone(dropZoneId);
+  }
+
+  _getDropZoneDropEffect(_dropZoneId, _event) {
+    return "copy";
+  }
+
+  _unbindBaseListeners() {
+    this.#listenerController?.abort();
+    this.#listenerController = null;
+  }
+
+  _bindBaseListeners() {
+    this._unbindBaseListeners();
+
+    const root = this._getDropZoneRoot();
+    if (!(root instanceof Element)) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    root.addEventListener("click", event => this._onBaseClick(event), { signal });
+    root.addEventListener("change", event => this._onBaseChange(event), { signal });
+    root.addEventListener("dragenter", event => this._onBaseDragEnter(event), { signal });
+    root.addEventListener("dragover", event => this._onBaseDragOver(event), { signal });
+    root.addEventListener("dragleave", event => this._onBaseDragLeave(event), { signal });
+    root.addEventListener("drop", event => this._onBaseDrop(event), { signal });
+
+    this.#listenerController = controller;
+  }
+
+  _onBaseClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const lockToggle = target.closest("[data-lock-toggle]");
+    if (!lockToggle) return;
+
+    void this._onToggleEditLock(event);
+  }
+
+  _onBaseChange(event) {
+    if (!this.canEditDocument) return;
+
+    const element = event.target;
+    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) {
+      return;
     }
+
+    if (!element.name?.trim()) return;
+    void this._onAutoSaveFieldChangeForElement(element);
+  }
+
+  _getDropZoneElementFromSource(source) {
+    const target = source?.target instanceof Element
+      ? source.target
+      : source instanceof Element
+        ? source
+        : null;
+
+    const dropZone = target?.closest("[data-drop-zone]") ?? null;
+    if (!dropZone) return null;
+
+    const dropZoneId = String(dropZone.dataset.dropZone ?? "");
+    return this._isTrackedDropZone(dropZoneId) ? dropZone : null;
+  }
+
+  _clearDropZoneHighlights() {
+    const root = this._getDropZoneRoot();
+    if (!(root instanceof Element)) return;
+
+    for (const dropZone of root.querySelectorAll("[data-drop-zone].is-dragover")) {
+      setDropZoneActive(dropZone, false);
+    }
+  }
+
+  _activateDropZone(dropZone) {
+    this._clearDropZoneHighlights();
+    setDropZoneActive(dropZone, true);
+  }
+
+  _onBaseDragEnter(event) {
+    const dropZone = this._getDropZoneElementFromSource(event);
+    if (!dropZone) return;
+
+    const dropZoneId = String(dropZone.dataset.dropZone ?? "");
+    if (!this._canDragOverDropZone(dropZoneId, event)) return;
+
+    event.preventDefault();
+    this._activateDropZone(dropZone);
+  }
+
+  _onBaseDragOver(event) {
+    const dropZone = this._getDropZoneElementFromSource(event);
+    if (!dropZone) return;
+
+    const dropZoneId = String(dropZone.dataset.dropZone ?? "");
+    if (!this._canDragOverDropZone(dropZoneId, event)) return;
+
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = this._getDropZoneDropEffect(dropZoneId, event);
+    }
+
+    this._activateDropZone(dropZone);
+  }
+
+  _onBaseDragLeave(event) {
+    const dropZone = this._getDropZoneElementFromSource(event);
+    if (!dropZone) return;
+    if (!isDragLeavingDropZone(event, dropZone)) return;
+
+    setDropZoneActive(dropZone, false);
+  }
+
+  _onBaseDrop(event) {
+    const dropZone = this._getDropZoneElementFromSource(event);
+    if (dropZone) {
+      event.preventDefault();
+      setDropZoneActive(dropZone, false);
+    }
+
+    this._clearDropZoneHighlights();
   }
 
   async _onToggleEditLock(event) {
@@ -150,20 +296,12 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     }
   }
 
-  _attachAutoSaveListeners() {
-    if (!this.canEditDocument) return;
-
-    const form = this.form;
-    if (!form) return;
-
-    const fields = form.querySelectorAll("input[name], textarea[name], select[name]");
-    for (const field of fields) {
-      field.addEventListener("change", this._onAutoSaveFieldChange.bind(this));
-    }
+  async _onAutoSaveFieldChange(event) {
+    const element = event?.currentTarget ?? event?.target ?? null;
+    return this._onAutoSaveFieldChangeForElement(element);
   }
 
-  async _onAutoSaveFieldChange(event) {
-    const element = event.currentTarget;
+  async _onAutoSaveFieldChangeForElement(element) {
     if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) {
       return;
     }

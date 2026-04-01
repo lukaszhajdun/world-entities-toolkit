@@ -3,34 +3,38 @@ import {
   MODULE_ID
 } from "../core/constants.js";
 import { getQualifiedActorType } from "../model/register-models.js";
-import { getDragDataFromEvent } from "../services/dragdrop.service.js";
+import {
+  beginActorRoleTransferDragFromElement,
+  getActorRoleTransferDataFromEvent,
+  getActorRoleTransferTargetFromEvent,
+  isActorRoleTransferEventForHost
+} from "../services/actor-role-transfer.service.js";
+import { getClosestDropZoneId } from "../services/dragdrop.service.js";
+import { openActorReference } from "../services/actor-ref.service.js";
 import {
   addVehiclePassenger,
   assignVehicleDriver,
-  assignVehicleDriverFromPassengerIndex,
   assignVehicleOwner,
   clearVehicleDriver,
   clearVehicleOwner,
-  createVehiclePassengerTransferDragData,
   getVehicleDriverReference,
   getVehicleOccupancyCount,
   getVehicleOwnerReference,
   getVehiclePassengerCapacity,
-  isVehiclePassengerTransferDragData,
   prepareVehicleDriver,
   prepareVehicleOwner,
   prepareVehiclePassengers,
   removeVehiclePassengerByIndex
 } from "../services/vehicle-actor.service.js";
-import { getClosestDropZoneId } from "../services/dragdrop.service.js";
-import { openActorReference } from "../services/actor-ref.service.js";
+import { transferVehicleActorRole } from "../services/vehicle-role-transfer.service.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
-import { DropZoneMixin } from "./mixins/drop-zone-mixin.js";
 
 const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
 
-export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
+export class VehicleActorSheet extends BaseModuleActorSheet {
+  #listenerController = null;
+
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -70,6 +74,10 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     return ["owner", "driver", "passengers"];
   }
 
+  _getDropZoneDropEffect(_dropZoneId, event) {
+    return isActorRoleTransferEventForHost(event, this.actor) ? "move" : "copy";
+  }
+
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const [ownerData, driverData, passengers] = await Promise.all([
@@ -101,106 +109,145 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
 
   async _onRender(context, options) {
     await super._onRender(context, options);
-    this._attachPortraitListeners();
-    this._attachOwnerListeners();
-    this._attachDriverListeners();
-    this._attachPassengerListeners();
+    this._bindUiListeners();
   }
 
-  _attachPortraitListeners() {
-    const form = this.form;
-    if (!form) return;
+  async close(options = {}) {
+    this._unbindUiListeners();
+    return super.close(options);
+  }
 
-    const portraitButton = form.querySelector("[data-edit-image]");
+  _unbindUiListeners() {
+    this.#listenerController?.abort();
+    this.#listenerController = null;
+  }
+
+  _bindUiListeners() {
+    this._unbindUiListeners();
+
+    const form = this.form;
+    if (!(form instanceof Element)) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    form.addEventListener("click", event => this._onSheetClick(event), { signal });
+
+    this.#listenerController = controller;
+  }
+
+  _onSheetClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const portraitButton = target.closest("[data-edit-image]");
     if (portraitButton) {
-      portraitButton.addEventListener("click", this._onPortraitEdit.bind(this));
+      void this._onPortraitEdit(event);
+      return;
+    }
+
+    const ownerClearButton = target.closest("[data-owner-clear]");
+    if (ownerClearButton) {
+      void this._onOwnerClear(event);
+      return;
+    }
+
+    const ownerOpenButton = target.closest("[data-owner-open]");
+    if (ownerOpenButton) {
+      void this._onOwnerOpen(event);
+      return;
+    }
+
+    const driverClearButton = target.closest("[data-driver-clear]");
+    if (driverClearButton) {
+      void this._onDriverClear(event);
+      return;
+    }
+
+    const driverOpenButton = target.closest("[data-driver-open]");
+    if (driverOpenButton) {
+      void this._onDriverOpen(event);
+      return;
+    }
+
+    const passengerRemoveButton = target.closest("[data-passenger-remove]");
+    if (passengerRemoveButton) {
+      void this._onPassengerRemove(event, passengerRemoveButton);
+      return;
+    }
+
+    const passengerOpenButton = target.closest("[data-passenger-open]");
+    if (passengerOpenButton) {
+      void this._onPassengerOpen(event, passengerOpenButton);
     }
   }
 
-  _attachOwnerListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const button of form.querySelectorAll("[data-owner-open]")) {
-      button.addEventListener("click", this._onOwnerOpen.bind(this));
-    }
-
-    for (const button of form.querySelectorAll("[data-owner-clear]")) {
-      button.addEventListener("click", this._onOwnerClear.bind(this));
-    }
-  }
-
-  _attachDriverListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const button of form.querySelectorAll("[data-driver-open]")) {
-      button.addEventListener("click", this._onDriverOpen.bind(this));
-    }
-
-    for (const button of form.querySelectorAll("[data-driver-clear]")) {
-      button.addEventListener("click", this._onDriverClear.bind(this));
-    }
-  }
-
-  _attachPassengerListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const row of form.querySelectorAll("[data-passenger-drag]")) {
-      row.addEventListener("dragstart", this._onPassengerDragStart.bind(this));
-    }
-
-    for (const button of form.querySelectorAll("[data-passenger-open]")) {
-      button.addEventListener("click", this._onPassengerOpen.bind(this));
-    }
-
-    for (const button of form.querySelectorAll("[data-passenger-remove]")) {
-      button.addEventListener("click", this._onPassengerRemove.bind(this));
-    }
-  }
-
-  _onDropZoneUiDrop(dropZoneId, event) {
-    if (dropZoneId !== "driver") return;
-
-    const dragData = getDragDataFromEvent(event);
-    if (!isVehiclePassengerTransferDragData(dragData)) return;
-
-    event.stopPropagation();
-    void this._handlePassengerTransferToDriver(dragData);
-  }
-
-  async _handlePassengerTransferToDriver(dragData) {
+  async _onDragStart(event) {
     if (!this.canEditDocument) {
-      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.DropLocked"));
+      return super._onDragStart(event);
+    }
+
+    const dragData = beginActorRoleTransferDragFromElement(event, this.actor, event.target);
+    if (dragData) {
+      event.stopPropagation();
+      return;
+    }
+
+    return super._onDragStart(event);
+  }
+
+  async _onDropActor(event, actor) {
+    const transferData = getActorRoleTransferDataFromEvent(event);
+    if (transferData && isActorRoleTransferEventForHost(event, this.actor)) {
+      const target = getActorRoleTransferTargetFromEvent(event);
+      if (!target) return null;
+      return this._handleInternalRoleTransfer(actor, transferData, target);
+    }
+
+    const dropZoneId = getClosestDropZoneId(event);
+
+    switch (dropZoneId) {
+      case "owner":
+        return this._handleOwnerDrop(actor);
+
+      case "driver":
+        return this._handleDriverDrop(actor);
+
+      case "passengers":
+        return this._handlePassengerDrop(actor);
+
+      default:
+        return null;
+    }
+  }
+
+  async _handleInternalRoleTransfer(draggedActor, transferData, target) {
+    if (!this.canEditDocument) {
+      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.DropLocked"));
       return null;
     }
 
-    const transfer = dragData?.wetVehiclePassengerTransfer;
-    if (!transfer || typeof transfer !== "object") {
-      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
-      return null;
-    }
-
-    const sameActor = transfer.sourceActorUuid
-      ? transfer.sourceActorUuid === this.actor?.uuid
-      : transfer.sourceActorId === this.actor?.id;
-
-    if (!sameActor) {
-      ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
-      return null;
-    }
-
-    const result = await assignVehicleDriverFromPassengerIndex(this.actor, Number(transfer.passengerIndex));
+    const result = await transferVehicleActorRole(this.actor, draggedActor, transferData, target);
 
     switch (result.status) {
       case "assigned":
       case "swapped":
-        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Driver.Notifications.Assigned"));
-        return this.actor;
+        if (target.targetRole === "driver") {
+          ui.notifications?.info(game.i18n.localize("WET.Vehicle.Driver.Notifications.Assigned"));
+        }
+        return draggedActor;
+
+      case "ownerAssigned":
+        ui.notifications?.info(game.i18n.localize("WET.Vehicle.Owner.Notifications.Assigned"));
+        return draggedActor;
+
+      case "movedToPassengers":
+      case "reordered":
+      case "noop":
+        return draggedActor;
 
       default:
-        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Driver.Notifications.InvalidDrop"));
+        ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.InvalidDrop"));
         return null;
     }
   }
@@ -222,37 +269,6 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     });
 
     await picker.browse(initialTarget);
-  }
-
-  _onPassengerDragStart(event) {
-    if (!this.canEditDocument || !event.dataTransfer) return;
-
-    const row = event.currentTarget;
-    const index = Number(row.dataset.passengerIndex);
-    if (!Number.isInteger(index)) return;
-
-    const dragData = createVehiclePassengerTransferDragData(this.actor, index);
-
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-  }
-
-  async _onDropActor(event, actor) {
-    const dropZoneId = getClosestDropZoneId(event);
-
-    switch (dropZoneId) {
-      case "owner":
-        return this._handleOwnerDrop(actor);
-
-      case "driver":
-        return this._handleDriverDrop(actor);
-
-      case "passengers":
-        return this._handlePassengerDrop(actor);
-
-      default:
-        return null;
-    }
   }
 
   async _handleOwnerDrop(actor) {
@@ -288,7 +304,6 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
 
     switch (result.status) {
       case "assigned":
-      case "swapped":
         ui.notifications?.info(game.i18n.localize("WET.Vehicle.Driver.Notifications.Assigned"));
         return actor;
 
@@ -403,11 +418,10 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     await clearVehicleDriver(this.actor);
   }
 
-  async _onPassengerOpen(event) {
+  async _onPassengerOpen(event, opener) {
     event.preventDefault();
 
-    const button = event.currentTarget;
-    const index = Number(button.dataset.passengerIndex);
+    const index = Number(opener.dataset.passengerIndex);
     if (!Number.isInteger(index)) return;
 
     const passenger = this.actor.system.passengers?.[index];
@@ -419,12 +433,11 @@ export class VehicleActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     }
   }
 
-  async _onPassengerRemove(event) {
+  async _onPassengerRemove(event, removeButton) {
     event.preventDefault();
     if (!this.canEditDocument) return;
 
-    const button = event.currentTarget;
-    const index = Number(button.dataset.passengerIndex);
+    const index = Number(removeButton.dataset.passengerIndex);
     if (!Number.isInteger(index)) return;
 
     await removeVehiclePassengerByIndex(this.actor, index);

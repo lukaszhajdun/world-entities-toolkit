@@ -10,7 +10,7 @@ import {
   resolveActorReference
 } from "./actor-ref.service.js";
 
-const EMPTY_ACTOR_REFERENCE = Object.freeze({
+export const EMPTY_ACTOR_REFERENCE = Object.freeze({
   uuid: "",
   id: "",
   name: "",
@@ -24,8 +24,11 @@ const DISALLOWED_PASSENGER_TYPES = Object.freeze(new Set([
   ACTOR_TYPES.VEHICLE
 ]));
 
-const VEHICLE_PASSENGER_TRANSFER_DATA_KEY = "wetVehiclePassengerTransfer";
-const VEHICLE_PASSENGER_TRANSFER_TYPE = "WETVehiclePassengerTransfer";
+export const VEHICLE_ROLE_KEYS = Object.freeze({
+  OWNER: "owner",
+  DRIVER: "driver",
+  PASSENGERS: "passengers"
+});
 
 function hasStoredActorReference(reference) {
   if (!reference || typeof reference !== "object") return false;
@@ -39,7 +42,7 @@ function hasStoredActorReference(reference) {
   ].some(value => typeof value === "string" && value.trim().length > 0);
 }
 
-function isVehicleActorDocument(actor) {
+export function isVehicleActorDocument(actor) {
   if (!actor || actor.documentName !== "Actor") return false;
 
   const actorType = actor.type ?? "";
@@ -55,21 +58,21 @@ function normalizeActorTypeKey(actorType) {
   return actorType;
 }
 
-function isModuleGroupActorDocument(actor) {
+export function isModuleGroupActorDocument(actor) {
   if (!actor || actor.documentName !== "Actor") return false;
   return normalizeActorTypeKey(actor.type) === ACTOR_TYPES.GROUP;
 }
 
-function isPassengerDisallowedActor(actor) {
+export function isVehiclePassengerDisallowedActor(actor) {
   if (!actor || actor.documentName !== "Actor") return true;
   return DISALLOWED_PASSENGER_TYPES.has(normalizeActorTypeKey(actor.type));
 }
 
-function isDriverDisallowedActor(actor) {
-  return isPassengerDisallowedActor(actor);
+export function isVehicleDriverDisallowedActor(actor) {
+  return isVehiclePassengerDisallowedActor(actor);
 }
 
-function getVehiclePassengersArray(actor) {
+export function getVehiclePassengersArray(actor) {
   return Array.isArray(actor?.system?.passengers) ? [...actor.system.passengers] : [];
 }
 
@@ -81,9 +84,13 @@ function hasActorReferenceInList(references, candidateReference) {
   return references.some(reference => isSameActorReference(reference, candidateReference));
 }
 
-function getPassengerIndexByReference(actor, candidateReference) {
+export function getVehiclePassengerReferenceByIndex(actor, passengerIndex) {
   const passengers = getVehiclePassengersArray(actor);
-  return passengers.findIndex(passenger => isSameActorReference(passenger, candidateReference));
+  if (!Number.isInteger(passengerIndex)) return null;
+  if (passengerIndex < 0 || passengerIndex >= passengers.length) return null;
+
+  const reference = passengers[passengerIndex];
+  return hasStoredActorReference(reference) ? reference : null;
 }
 
 function getResolvedActorPresentation(reference, resolved, fallbackNameKey) {
@@ -118,6 +125,28 @@ export function getVehicleDriverReference(actor) {
   return reference;
 }
 
+export function getVehicleRoleSourceReference(actor, sourceRole, sourceIndex = null) {
+  switch (sourceRole) {
+    case VEHICLE_ROLE_KEYS.DRIVER:
+      return getVehicleDriverReference(actor);
+
+    case VEHICLE_ROLE_KEYS.PASSENGERS:
+      return getVehiclePassengerReferenceByIndex(actor, sourceIndex);
+
+    default:
+      return null;
+  }
+}
+
+export function doesVehicleRoleSourceMatchActor(actor, sourceRole, sourceIndex, candidateActor) {
+  if (!candidateActor || candidateActor.documentName !== "Actor") return false;
+
+  const reference = getVehicleRoleSourceReference(actor, sourceRole, sourceIndex);
+  if (!reference) return false;
+
+  return isSameActorReference(reference, createActorReference(candidateActor));
+}
+
 export function getVehicleOccupancyCount(actor) {
   const passengersCount = getVehiclePassengersArray(actor).length;
   const driverCount = getVehicleDriverReference(actor) ? 1 : 0;
@@ -138,79 +167,6 @@ export async function prepareVehicleDriver(actor) {
 
   const resolved = await resolveActorReference(reference);
   return getResolvedActorPresentation(reference, resolved, "WET.Vehicle.Driver.UnknownName");
-}
-
-export function createVehiclePassengerTransferDragData(actor, passengerIndex) {
-  if (!actor || actor.documentName !== "Actor") {
-    throw new Error("createVehiclePassengerTransferDragData expected an Actor document.");
-  }
-
-  if (!Number.isInteger(passengerIndex)) {
-    throw new Error("createVehiclePassengerTransferDragData expected a passenger index.");
-  }
-
-  return {
-    type: VEHICLE_PASSENGER_TRANSFER_TYPE,
-    [VEHICLE_PASSENGER_TRANSFER_DATA_KEY]: {
-      sourceActorUuid: actor.uuid ?? "",
-      sourceActorId: actor.id ?? "",
-      passengerIndex
-    }
-  };
-}
-
-export function isVehiclePassengerTransferDragData(dragData) {
-  return Boolean(dragData?.[VEHICLE_PASSENGER_TRANSFER_DATA_KEY]);
-}
-
-export async function assignVehicleDriverFromPassengerIndex(actor, passengerIndex) {
-  if (!actor || actor.documentName !== "Actor") {
-    return { status: "invalid" };
-  }
-
-  if (!Number.isInteger(passengerIndex)) {
-    return { status: "invalid" };
-  }
-
-  const passengers = getVehiclePassengersArray(actor);
-  if (passengerIndex < 0 || passengerIndex >= passengers.length) {
-    return { status: "missingPassenger" };
-  }
-
-  const passengerReference = passengers[passengerIndex];
-  if (!hasStoredActorReference(passengerReference)) {
-    return { status: "missingPassenger" };
-  }
-
-  const currentDriver = getVehicleDriverReference(actor);
-
-  if (currentDriver) {
-    passengers[passengerIndex] = currentDriver;
-
-    await actor.update({
-      "system.driver.actor": passengerReference,
-      "system.passengers": passengers
-    });
-
-    return {
-      status: "swapped",
-      driver: passengerReference
-    };
-  }
-
-  passengers.splice(passengerIndex, 1);
-
-  await actor.update({
-    "system.driver.actor": passengerReference,
-    "system.passengers": passengers
-  });
-
-  return {
-    status: "assigned",
-    driver: passengerReference,
-    capacity: getVehiclePassengerCapacity(actor),
-    count: passengers.length + 1
-  };
 }
 
 export async function assignVehicleOwner(actor, candidateActor) {
@@ -245,7 +201,7 @@ export async function assignVehicleDriver(actor, candidateActor) {
     return { status: "invalid" };
   }
 
-  if (isDriverDisallowedActor(candidateActor)) {
+  if (isVehicleDriverDisallowedActor(candidateActor)) {
     return { status: "invalidType" };
   }
 
@@ -343,7 +299,7 @@ async function getEligibleGroupPassengerActors(vehicleActor, groupActor) {
   for (const memberReference of groupMembers) {
     const resolvedActor = await resolveActorReference(memberReference);
     if (!resolvedActor || resolvedActor.documentName !== "Actor") continue;
-    if (isPassengerDisallowedActor(resolvedActor)) continue;
+    if (isVehiclePassengerDisallowedActor(resolvedActor)) continue;
 
     const resolvedReference = createActorReference(resolvedActor);
     if (currentDriver && isSameActorReference(currentDriver, resolvedReference)) continue;
@@ -411,7 +367,7 @@ export async function addVehiclePassenger(actor, candidateActor) {
     return addVehiclePassengerGroup(actor, candidateActor);
   }
 
-  if (isPassengerDisallowedActor(candidateActor)) {
+  if (isVehiclePassengerDisallowedActor(candidateActor)) {
     return { status: "invalidType" };
   }
 

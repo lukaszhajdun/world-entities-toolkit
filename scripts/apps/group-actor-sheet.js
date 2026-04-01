@@ -15,12 +15,13 @@ import {
 } from "../services/group-actor.service.js";
 import { getQualifiedActorType } from "../model/register-models.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
-import { DropZoneMixin } from "./mixins/drop-zone-mixin.js";
 
 const { FilePicker } = foundry.applications.apps;
 const GROUP_TYPE = getQualifiedActorType(ACTOR_TYPES.GROUP);
 
-export class GroupActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
+export class GroupActorSheet extends BaseModuleActorSheet {
+  #listenerController = null;
+
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -77,30 +78,52 @@ export class GroupActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
 
   async _onRender(context, options) {
     await super._onRender(context, options);
-    this._attachMemberListeners();
-    this._attachPortraitListeners();
+    this._bindUiListeners();
   }
 
-  _attachMemberListeners() {
-    const form = this.form;
-    if (!form) return;
-
-    for (const button of form.querySelectorAll("[data-member-open]")) {
-      button.addEventListener("click", this._onMemberOpen.bind(this));
-    }
-
-    for (const button of form.querySelectorAll("[data-member-remove]")) {
-      button.addEventListener("click", this._onMemberRemove.bind(this));
-    }
+  async close(options = {}) {
+    this._unbindUiListeners();
+    return super.close(options);
   }
 
-  _attachPortraitListeners() {
-    const form = this.form;
-    if (!form) return;
+  _unbindUiListeners() {
+    this.#listenerController?.abort();
+    this.#listenerController = null;
+  }
 
-    const portraitButton = form.querySelector("[data-edit-image]");
+  _bindUiListeners() {
+    this._unbindUiListeners();
+
+    const form = this.form;
+    if (!(form instanceof Element)) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    form.addEventListener("click", event => this._onSheetClick(event), { signal });
+
+    this.#listenerController = controller;
+  }
+
+  _onSheetClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const portraitButton = target.closest("[data-edit-image]");
     if (portraitButton) {
-      portraitButton.addEventListener("click", this._onPortraitEdit.bind(this));
+      void this._onPortraitEdit(event);
+      return;
+    }
+
+    const memberOpenButton = target.closest("[data-member-open]");
+    if (memberOpenButton) {
+      void this._onMemberOpen(event, memberOpenButton);
+      return;
+    }
+
+    const memberRemoveButton = target.closest("[data-member-remove]");
+    if (memberRemoveButton) {
+      void this._onMemberRemove(event, memberRemoveButton);
     }
   }
 
@@ -153,10 +176,9 @@ export class GroupActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     }
   }
 
-  async _onMemberOpen(event) {
+  async _onMemberOpen(event, button) {
     event.preventDefault();
 
-    const button = event.currentTarget;
     const index = Number(button.dataset.memberIndex);
     if (!Number.isInteger(index)) return;
 
@@ -169,12 +191,11 @@ export class GroupActorSheet extends DropZoneMixin(BaseModuleActorSheet) {
     }
   }
 
-  async _onMemberRemove(event) {
+  async _onMemberRemove(event, button) {
     event.preventDefault();
 
     if (!this.canEditDocument) return;
 
-    const button = event.currentTarget;
     const index = Number(button.dataset.memberIndex);
     if (!Number.isInteger(index)) return;
 
