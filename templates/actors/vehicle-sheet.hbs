@@ -266,6 +266,7 @@
                 <article
                   class="wet-owner-card {{#unless driverData.exists}}wet-owner-card--missing{{/unless}}"
                   data-uuid="{{driverData.uuid}}"
+                  data-actor-id="{{driverData.id}}"
                   data-role-transfer-source="true"
                   data-role-transfer-source-role="driver"
                   data-role-transfer-source-type="slot"
@@ -275,6 +276,7 @@
                     class="wet-owner-card__main"
                     type="button"
                     data-driver-open="true"
+                    draggable="{{#if @root.canEdit}}true{{else}}false{{/if}}"
                   >
                     <span class="wet-owner-card__media">
                       <span class="wet-owner-card__thumb">
@@ -355,6 +357,7 @@
                     class="wet-passenger-card {{#unless this.exists}}wet-passenger-card--missing{{/unless}}"
                     data-passenger-index="{{this.index}}"
                     data-uuid="{{this.uuid}}"
+                    data-actor-id="{{this.id}}"
                     data-role-transfer-source="true"
                     data-role-transfer-source-role="passengers"
                     data-role-transfer-source-type="listItem"
@@ -370,6 +373,7 @@
                       type="button"
                       data-passenger-open="true"
                       data-passenger-index="{{this.index}}"
+                      draggable="{{#if @root.canEdit}}true{{else}}false{{/if}}"
                     >
                       <span class="wet-passenger-card__media">
                         <span class="wet-passenger-card__thumb">

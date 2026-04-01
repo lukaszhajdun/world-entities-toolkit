@@ -95,10 +95,12 @@ export function getVehiclePassengerReferenceByIndex(actor, passengerIndex) {
 
 function getResolvedActorPresentation(reference, resolved, fallbackNameKey) {
   const actorType = resolved?.type ?? reference?.type ?? "";
+  const resolvedUuid = typeof resolved?.uuid === "string" ? resolved.uuid : "";
+  const resolvedId = typeof resolved?.id === "string" ? resolved.id : "";
 
   return {
-    uuid: reference?.uuid ?? "",
-    id: reference?.id ?? "",
+    uuid: reference?.uuid || resolvedUuid || "",
+    id: reference?.id || resolvedId || "",
     name: resolved?.name ?? reference?.name ?? game.i18n.localize(fallbackNameKey),
     img: resolved?.img ?? reference?.img ?? "icons/svg/mystery-man.svg",
     type: actorType,

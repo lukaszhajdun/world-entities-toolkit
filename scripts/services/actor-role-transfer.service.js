@@ -4,7 +4,7 @@ import {
 } from "./dragdrop.service.js";
 
 export const ACTOR_ROLE_TRANSFER_DATA_KEY = "wetActorRoleTransfer";
-export const ACTOR_ROLE_TRANSFER_TYPE = DRAG_DATA_TYPES.ACTOR;
+export const ACTOR_ROLE_TRANSFER_TYPE = "WET.ActorRoleTransfer";
 
 export const ACTOR_ROLE_TRANSFER_SOURCE_TYPES = Object.freeze({
   SLOT: "slot",
@@ -34,14 +34,39 @@ function getRoleTransferTargetElement(element) {
     : null;
 }
 
+function getEventPathClosestElement(event, selector) {
+  const path = typeof event?.composedPath === "function"
+    ? event.composedPath()
+    : [];
+
+  for (const node of path) {
+    if (!(node instanceof Element)) continue;
+    if (node.matches(selector)) return node;
+  }
+
+  const target = event?.target;
+  return target instanceof Element ? target.closest(selector) : null;
+}
+
 function getActorUuidFromSourceElement(element) {
   if (!(element instanceof Element)) return "";
 
   const uuid = String(element.dataset.uuid ?? "");
-  if (!uuid.length) return "";
+  if (uuid.length) {
+    const parsed = foundry.utils.parseUuid(uuid);
+    if (parsed?.documentType === "Actor") return uuid;
 
-  const parsed = foundry.utils.parseUuid(uuid);
-  return parsed?.type === "Actor" ? uuid : "";
+    // Accept common Actor UUID forms used by world and compendium documents.
+    if (/^Actor\.[^.]+$/.test(uuid) || /\.Actor\.[^.]+$/.test(uuid)) {
+      return uuid;
+    }
+  }
+
+  const fallbackId = String(element.dataset.actorId ?? element.dataset.id ?? "");
+  if (!fallbackId.length) return "";
+
+  const fallbackActor = game.actors?.get(fallbackId);
+  return fallbackActor?.uuid ?? "";
 }
 
 function parseRoleTransferLocation(element, datasetPrefix) {
@@ -118,10 +143,16 @@ export function createActorRoleTransferDragDataForActor(actor, {
 }
 
 export function isActorRoleTransferDragData(dragData) {
-  return dragData?.type === ACTOR_ROLE_TRANSFER_TYPE
-    && typeof dragData?.uuid === "string"
-    && dragData.uuid.length > 0
-    && Boolean(dragData?.[ACTOR_ROLE_TRANSFER_DATA_KEY]);
+  const hasTransferPayload = Boolean(dragData?.[ACTOR_ROLE_TRANSFER_DATA_KEY]);
+  if (!hasTransferPayload) return false;
+
+  // Keep backward compatibility with older payloads that used Actor type.
+  const dragType = String(dragData?.type ?? "");
+  if (dragType.length && dragType !== ACTOR_ROLE_TRANSFER_TYPE && dragType !== DRAG_DATA_TYPES.ACTOR) {
+    return false;
+  }
+
+  return typeof dragData?.uuid === "string" && dragData.uuid.length > 0;
 }
 
 export function getActorRoleTransferData(dragData) {
@@ -189,10 +220,10 @@ export function getActorRoleTransferSourceFromElement(element) {
 }
 
 export function getActorRoleTransferSourceFromEvent(event) {
-  const target = event?.target instanceof Element ? event.target : null;
-  if (!target) return null;
+  const sourceElement = getEventPathClosestElement(event, "[data-role-transfer-source]");
+  if (!sourceElement) return null;
 
-  return getActorRoleTransferSourceFromElement(target);
+  return getActorRoleTransferSourceFromElement(sourceElement);
 }
 
 export function getActorRoleTransferTargetFromElement(element) {
@@ -210,10 +241,10 @@ export function getActorRoleTransferTargetFromElement(element) {
 }
 
 export function getActorRoleTransferTargetFromEvent(event) {
-  const target = event?.target instanceof Element ? event.target : null;
-  if (!target) return null;
+  const targetElement = getEventPathClosestElement(event, "[data-role-transfer-target]");
+  if (!targetElement) return null;
 
-  return getActorRoleTransferTargetFromElement(target);
+  return getActorRoleTransferTargetFromElement(targetElement);
 }
 
 export function applyActorRoleTransferDragData(event, dragData) {

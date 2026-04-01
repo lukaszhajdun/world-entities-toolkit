@@ -31,6 +31,9 @@ import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
 
 const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
+function debugVehicleRoleDnD(...args) {
+  void args;
+}
 
 export class VehicleActorSheet extends BaseModuleActorSheet {
   #listenerController = null;
@@ -195,6 +198,12 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
   async _onDelegatedDragStart(event, dragSource) {
     const dragData = beginActorRoleTransferDragFromElement(event, this.actor, dragSource);
+    debugVehicleRoleDnD("delegated dragstart", {
+      actorId: this.actor?.id ?? null,
+      dragSourceRole: dragSource?.dataset?.roleTransferSourceRole ?? null,
+      dragSourceType: dragSource?.dataset?.roleTransferSourceType ?? null,
+      hasDragData: Boolean(dragData)
+    });
     if (!dragData) return false;
 
     if (event.dataTransfer) {
@@ -206,10 +215,40 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
   async _onDropActor(event, actor) {
     const transferData = getActorRoleTransferDataFromEvent(event);
+    debugVehicleRoleDnD("_onDropActor entered", {
+      actorId: this.actor?.id ?? null,
+      droppedActorUuid: actor?.uuid ?? null,
+      transferData,
+      isInternalTransfer: isActorRoleTransferEventForHost(event, this.actor)
+    });
+
     if (transferData && isActorRoleTransferEventForHost(event, this.actor)) {
+      let draggedActor = actor;
+      if (draggedActor?.documentName !== "Actor" && transferData.actorUuid) {
+        try {
+          const resolved = await fromUuid(transferData.actorUuid);
+          draggedActor = resolved?.documentName === "Actor" ? resolved : null;
+        } catch (_error) {
+          draggedActor = null;
+        }
+      }
+
+      if (draggedActor?.documentName !== "Actor") {
+        ui.notifications?.warn("WET internal drop failed: could not resolve dragged actor.");
+        return null;
+      }
+
       const target = getActorRoleTransferTargetFromEvent(event);
-      if (!target) return null;
-      return this._handleInternalRoleTransfer(actor, transferData, target);
+      debugVehicleRoleDnD("internal target parsed", {
+        actorId: this.actor?.id ?? null,
+        target
+      });
+      if (!target) {
+        ui.notifications?.warn("WET internal drop failed: could not resolve drop target.");
+        return null;
+      }
+
+      return this._handleInternalRoleTransfer(draggedActor, transferData, target);
     }
 
     const dropZoneId = getClosestDropZoneId(event);
@@ -236,6 +275,13 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
 
     const result = await transferVehicleActorRole(this.actor, draggedActor, transferData, target);
+    debugVehicleRoleDnD("internal transfer result", {
+      actorId: this.actor?.id ?? null,
+      draggedActorUuid: draggedActor?.uuid ?? null,
+      transferData,
+      target,
+      result
+    });
 
     switch (result.status) {
       case "assigned":
@@ -253,6 +299,22 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
       case "reordered":
       case "noop":
         return draggedActor;
+
+      case "invalidSourceActor":
+        ui.notifications?.warn("WET internal drop failed: source actor does not match stored role reference.");
+        return null;
+
+      case "missingSource":
+        ui.notifications?.warn("WET internal drop failed: missing source role data.");
+        return null;
+
+      case "missingTarget":
+        ui.notifications?.warn("WET internal drop failed: missing target role data.");
+        return null;
+
+      case "invalidTarget":
+        ui.notifications?.warn("WET internal drop failed: transfer to this target is not allowed.");
+        return null;
 
       default:
         ui.notifications?.warn(game.i18n.localize("WET.Vehicle.Passengers.Notifications.InvalidDrop"));
