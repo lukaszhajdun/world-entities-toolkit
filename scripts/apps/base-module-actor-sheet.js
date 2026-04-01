@@ -19,21 +19,16 @@ import {
   resolveActorFromDragData,
   setDropZoneActive
 } from "../services/dragdrop.service.js";
+import { ActorRoleDnDController } from "./controllers/actor-role-dnd-controller.js";
+import { ActorRoleDnDFallbackStrategy } from "./controllers/actor-role-dnd-fallback-strategy.js";
 
 const { ActorSheetV2 } = foundry.applications.sheets;
 const { HandlebarsApplicationMixin } = foundry.applications.api;
-function debugRoleDnD(...args) {
-  void args;
-}
 
 export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV2) {
-  #listenerController = null;
-  #isInternalRoleDragActive = false;
+  #roleDnDController = new ActorRoleDnDController(this);
+  #roleDnDFallback = new ActorRoleDnDFallbackStrategy(this);
   #handledDropEvents = new WeakSet();
-  #activeRoleTransferDragData = null;
-  #lastInternalRoleTransferTarget = null;
-  #lastInternalPointerPosition = null;
-  #dropHandledForActiveInternalDrag = false;
 
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
@@ -198,86 +193,12 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   _unbindBaseListeners() {
-    this.#listenerController?.abort();
-    this.#listenerController = null;
+    this.#roleDnDController.unbind();
   }
 
   _bindBaseListeners() {
-    this._unbindBaseListeners();
-
     const root = this._getDropZoneRoot();
-    if (!(root instanceof Element)) return;
-
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    root.addEventListener("click", event => this._onBaseClick(event), { signal });
-    root.addEventListener("change", event => this._onBaseChange(event), { signal });
-    root.addEventListener("dragend", event => {
-      void this._onBaseDragEnd(event);
-    }, { signal });
-    root.addEventListener("dragenter", event => this._onBaseDragEnter(event), { signal, capture: true });
-    root.addEventListener("dragover", event => this._onBaseDragOver(event), { signal, capture: true });
-    root.addEventListener("dragleave", event => this._onBaseDragLeave(event), { signal, capture: true });
-    root.addEventListener("drop", event => {
-      void this._onBaseDrop(event).catch(error => {
-        debugRoleDnD("drop handler error", {
-          actorId: this.actor?.id ?? null,
-          message: error?.message ?? String(error)
-        });
-      });
-    }, { signal, capture: true });
-
-    // Fallback for browsers/hosts where sheet-level drop listeners are preempted.
-    document.addEventListener("dragover", event => this._onDocumentDragOver(event), { signal, capture: true });
-    document.addEventListener("drop", event => {
-      void this._onDocumentDrop(event).catch(error => {
-        debugRoleDnD("document drop handler error", {
-          actorId: this.actor?.id ?? null,
-          message: error?.message ?? String(error)
-        });
-      });
-    }, { signal, capture: true });
-    document.addEventListener("pointerup", event => {
-      void this._onDocumentPointerUp(event).catch(error => {
-        debugRoleDnD("document pointerup handler error", {
-          actorId: this.actor?.id ?? null,
-          message: error?.message ?? String(error)
-        });
-      });
-    }, { signal, capture: true });
-    document.addEventListener("mouseup", event => {
-      void this._onDocumentPointerUp(event).catch(error => {
-        debugRoleDnD("document mouseup handler error", {
-          actorId: this.actor?.id ?? null,
-          message: error?.message ?? String(error)
-        });
-      });
-    }, { signal, capture: true });
-
-    for (const dragSource of root.querySelectorAll("[data-role-transfer-source]")) {
-      dragSource.addEventListener("dragstart", event => {
-        void this._onBaseDragStart(event);
-      }, { signal });
-
-      dragSource.addEventListener("dragend", () => {
-        void this._onBaseDragEnd();
-      }, { signal });
-    }
-
-    const dropTargets = new Set([
-      ...root.querySelectorAll("[data-drop-zone]"),
-      ...root.querySelectorAll("[data-role-transfer-target]")
-    ]);
-
-    debugRoleDnD("bound listeners", {
-      actorId: this.actor?.id ?? null,
-      sheet: this.constructor.name,
-      dragSources: root.querySelectorAll("[data-role-transfer-source]").length,
-      dropTargets: dropTargets.size
-    });
-
-    this.#listenerController = controller;
+    this.#roleDnDController.bind(root);
   }
 
   _onBaseClick(event) {
@@ -302,36 +223,62 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     void this._onAutoSaveFieldChangeForElement(element);
   }
 
+  async #resolveInternalTransferActor(dragData) {
+    let actor = null;
+    const transferData = getActorRoleTransferData(dragData);
+
+    if (transferData?.actorUuid) {
+      try {
+        const resolved = await fromUuid(transferData.actorUuid);
+        actor = resolved?.documentName === "Actor" ? resolved : null;
+      } catch (_error) {
+        actor = null;
+      }
+    }
+
+    if (!actor && isActorDragData(dragData)) {
+      actor = await resolveActorFromDragData(dragData);
+    }
+
+    return actor ?? null;
+  }
+
+  #createSyntheticDropEvent(target, payload) {
+    const root = this._getDropZoneRoot();
+
+    return {
+      target,
+      dataTransfer: {
+        types: ["text/plain"],
+        getData: type => (type === "text/plain" ? payload : "")
+      },
+      preventDefault() {},
+      stopPropagation() {},
+      stopImmediatePropagation() {},
+      composedPath() {
+        return root instanceof Element ? [target, root] : [target];
+      }
+    };
+  }
+
   async _onBaseDragStart(event) {
     const dragSource = this._getDelegatedDragStartElement(event);
-    debugRoleDnD("dragstart received", {
-      actorId: this.actor?.id ?? null,
-      target: event.target instanceof Element ? event.target.outerHTML.slice(0, 120) : null,
-      dragSourceFound: Boolean(dragSource),
-      canEdit: this.canEditDocument
-    });
 
     if (!dragSource) return false;
     if (!this.canEditDocument) return false;
 
     const handled = await this._onDelegatedDragStart(event, dragSource);
-    debugRoleDnD("dragstart handled", {
-      actorId: this.actor?.id ?? null,
-      handled
-    });
     if (!handled) return false;
 
-    this.#isInternalRoleDragActive = true;
-    this.#dropHandledForActiveInternalDrag = false;
-    this.#lastInternalRoleTransferTarget = null;
-    this.#activeRoleTransferDragData = getDragDataFromEvent(event);
-
-    if (!this.#activeRoleTransferDragData) {
+    let dragData = getDragDataFromEvent(event);
+    if (!dragData) {
       const source = getActorRoleTransferSourceFromElement(dragSource);
       if (source) {
-        this.#activeRoleTransferDragData = createActorRoleTransferDragDataForActor(this.actor, source);
+        dragData = createActorRoleTransferDragDataForActor(this.actor, source);
       }
     }
+
+    this.#roleDnDFallback.activate(dragData);
 
     event.stopPropagation();
     event.stopImmediatePropagation();
@@ -342,11 +289,7 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     try {
       await this._finalizeInternalDragFallback("dragend", event);
     } finally {
-      this.#isInternalRoleDragActive = false;
-      this.#activeRoleTransferDragData = null;
-      this.#lastInternalRoleTransferTarget = null;
-      this.#lastInternalPointerPosition = null;
-      this.#dropHandledForActiveInternalDrag = false;
+      this.#roleDnDFallback.reset();
       this._clearDropZoneHighlights();
     }
   }
@@ -411,7 +354,7 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
   _onBaseDragOver(event) {
     // Browsers often do not expose dataTransfer payload during dragover.
     // Keep drop enabled while an internal role drag is active.
-    if (this.#isInternalRoleDragActive) {
+    if (this.#roleDnDFallback.isActive) {
       event.preventDefault();
       if (event.dataTransfer) {
         event.dataTransfer.dropEffect = "move";
@@ -422,12 +365,7 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     if (!dropZone) {
       const transferTarget = this._getRoleTransferTargetElement(event);
       if (!transferTarget || !getActorRoleTransferTargetFromEvent(event)) {
-        this.#lastInternalRoleTransferTarget = null;
-        this.#lastInternalPointerPosition = {
-          clientX: Number(event?.clientX ?? NaN),
-          clientY: Number(event?.clientY ?? NaN)
-        };
-        this._clearDropZoneHighlights();
+        this.#roleDnDFallback.clearTargetAndHighlights();
         return;
       }
 
@@ -436,11 +374,7 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
         event.dataTransfer.dropEffect = "move";
       }
 
-      this.#lastInternalRoleTransferTarget = transferTarget;
-      this.#lastInternalPointerPosition = {
-        clientX: Number(event?.clientX ?? NaN),
-        clientY: Number(event?.clientY ?? NaN)
-      };
+      this.#roleDnDFallback.rememberTarget(transferTarget);
       this._activateDropZone(transferTarget);
       return;
     }
@@ -492,57 +426,32 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   _onDocumentDragOver(event) {
-    if (!this.#isInternalRoleDragActive) return;
+    if (!this.#roleDnDFallback.isActive) return;
     if (!this._isEventWithinSheetRoot(event)) {
-      this.#lastInternalRoleTransferTarget = null;
-      this.#lastInternalPointerPosition = {
-        clientX: Number(event?.clientX ?? NaN),
-        clientY: Number(event?.clientY ?? NaN)
-      };
-      this._clearDropZoneHighlights();
+      this.#roleDnDFallback.clearTargetAndHighlights();
       return;
     }
-    debugRoleDnD("document dragover", {
-      actorId: this.actor?.id ?? null,
-      target: event?.target instanceof Element ? event.target.tagName : null,
-      clientX: Number(event?.clientX ?? NaN),
-      clientY: Number(event?.clientY ?? NaN)
-    });
     this._onBaseDragOver(event);
 
     const pointerTarget = this._getRoleTransferTargetElementAtPoint(event?.clientX, event?.clientY);
     if (pointerTarget) {
-      this.#lastInternalRoleTransferTarget = pointerTarget;
-      this.#lastInternalPointerPosition = {
-        clientX: Number(event?.clientX ?? NaN),
-        clientY: Number(event?.clientY ?? NaN)
-      };
+      this.#roleDnDFallback.rememberTarget(pointerTarget);
     }
   }
 
   async _onDocumentDrop(event) {
-    if (!this.#isInternalRoleDragActive) return;
+    if (!this.#roleDnDFallback.isActive) return;
     if (!this._isEventWithinSheetRoot(event)) return;
-    debugRoleDnD("document drop", {
-      actorId: this.actor?.id ?? null,
-      target: event?.target instanceof Element ? event.target.tagName : null,
-      clientX: Number(event?.clientX ?? NaN),
-      clientY: Number(event?.clientY ?? NaN)
-    });
     await this._onBaseDrop(event);
   }
 
   async _onDocumentPointerUp(event) {
-    if (!this.#isInternalRoleDragActive) return;
-    if (this.#dropHandledForActiveInternalDrag) return;
+    if (!this.#roleDnDFallback.isActive) return;
+    if (this.#roleDnDFallback.dropHandled) return;
 
     const pointerTarget = this._getRoleTransferTargetElementAtPoint(event?.clientX, event?.clientY);
     if (pointerTarget instanceof Element) {
-      this.#lastInternalRoleTransferTarget = pointerTarget;
-      this.#lastInternalPointerPosition = {
-        clientX: Number(event?.clientX ?? NaN),
-        clientY: Number(event?.clientY ?? NaN)
-      };
+      this.#roleDnDFallback.rememberTarget(pointerTarget);
     }
 
     await this._finalizeInternalDragFallback("pointerup", event);
@@ -565,81 +474,19 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
   }
 
   async _finalizeInternalDragFallback(reason, event = null) {
-    if (!this.#isInternalRoleDragActive) return;
-    if (this.#dropHandledForActiveInternalDrag) return;
-    if (!this.#activeRoleTransferDragData) return;
-
-    const pointerClientX = Number(event?.clientX ?? NaN);
-    const pointerClientY = Number(event?.clientY ?? NaN);
-    const hasPointerCoordinates = Number.isFinite(pointerClientX) && Number.isFinite(pointerClientY);
-
-    // Prefer the actual release point. If unavailable (common with dragend),
-    // fall back to the last valid hovered target captured during dragover.
-    let target = this._getRoleTransferTargetElementAtPoint(pointerClientX, pointerClientY);
-    if (!(target instanceof Element) && !hasPointerCoordinates) {
-      target = this.#lastInternalRoleTransferTarget;
-    }
-
-    if (!(target instanceof Element)) return;
-
-    debugRoleDnD(`${reason} fallback transfer`, {
-      actorId: this.actor?.id ?? null,
-      targetRole: target.dataset.roleTransferTargetRole ?? null,
-      targetType: target.dataset.roleTransferTargetType ?? null
+    await this.#roleDnDFallback.finalizeFallback(reason, event, {
+      resolveTargetAtPoint: (clientX, clientY) => this._getRoleTransferTargetElementAtPoint(clientX, clientY),
+      createSyntheticDropEvent: (target, payload) => this.#createSyntheticDropEvent(target, payload),
+      resolveActor: dragData => this.#resolveInternalTransferActor(dragData),
+      onDropActor: (syntheticEvent, actor) => this._onDropActor(syntheticEvent, actor)
     });
-
-    const payload = JSON.stringify(this.#activeRoleTransferDragData);
-    const root = this._getDropZoneRoot();
-
-    const syntheticEvent = {
-      target,
-      dataTransfer: {
-        types: ["text/plain"],
-        getData: type => (type === "text/plain" ? payload : "")
-      },
-      preventDefault() {},
-      stopPropagation() {},
-      stopImmediatePropagation() {},
-      composedPath() {
-        return root instanceof Element ? [target, root] : [target];
-      }
-    };
-
-    const dragData = this.#activeRoleTransferDragData;
-    if (!dragData || typeof dragData !== "object") return;
-
-    this.#dropHandledForActiveInternalDrag = true;
-
-    let actor = null;
-    const transferData = getActorRoleTransferData(dragData);
-
-    if (transferData?.actorUuid) {
-      try {
-        const resolved = await fromUuid(transferData.actorUuid);
-        actor = resolved?.documentName === "Actor" ? resolved : null;
-      } catch (_error) {
-        actor = null;
-      }
-    }
-
-    if (!actor && isActorDragData(dragData)) {
-      actor = await resolveActorFromDragData(dragData);
-    }
-
-    await this._onDropActor(syntheticEvent, actor ?? null);
   }
 
   async _onBaseDrop(event) {
-    debugRoleDnD("base drop entry", {
-      actorId: this.actor?.id ?? null,
-      target: event?.target instanceof Element ? event.target.outerHTML.slice(0, 120) : null
-    });
-
     if (this.#handledDropEvents.has(event)) return;
     this.#handledDropEvents.add(event);
 
-    this.#isInternalRoleDragActive = false;
-    this.#dropHandledForActiveInternalDrag = true;
+    this.#roleDnDFallback.markDropHandled();
 
     const dropZone = this._getDropZoneElementFromSource(event);
     if (dropZone) {
@@ -650,13 +497,6 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     this._clearDropZoneHighlights();
 
     const dragData = getDragDataFromEvent(event);
-    debugRoleDnD("drop received", {
-      actorId: this.actor?.id ?? null,
-      target: event.target instanceof Element ? event.target.outerHTML.slice(0, 120) : null,
-      hasDragData: Boolean(dragData),
-      dragDataType: dragData?.type ?? null,
-      isInternalTransfer: isActorRoleTransferEventForHost(event, this.actor)
-    });
     if (!dragData) return;
 
     event.stopPropagation();
@@ -666,23 +506,9 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
 
   async _onDrop(event) {
     const dragData = getDragDataFromEvent(event);
-    debugRoleDnD("_onDrop invoked", {
-      actorId: this.actor?.id ?? null,
-      dragDataType: dragData?.type ?? null
-    });
     if (isActorRoleTransferEventForHost(event, this.actor)) {
       event.preventDefault();
-      const transferData = getActorRoleTransferData(dragData);
-
-      let actor = null;
-      if (transferData?.actorUuid) {
-        try {
-          const resolved = await fromUuid(transferData.actorUuid);
-          actor = resolved?.documentName === "Actor" ? resolved : null;
-        } catch (_error) {
-          actor = null;
-        }
-      }
+      const actor = await this.#resolveInternalTransferActor(dragData);
 
       return this._onDropActor(event, actor ?? null);
     }
@@ -690,10 +516,6 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     if (isActorDragData(dragData)) {
       event.preventDefault();
       const actor = await resolveActorFromDragData(dragData);
-      debugRoleDnD("resolved actor from drop", {
-        actorId: this.actor?.id ?? null,
-        resolvedActorUuid: actor?.uuid ?? null
-      });
       return this._onDropActor(event, actor ?? null);
     }
 

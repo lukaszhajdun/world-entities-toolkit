@@ -31,9 +31,6 @@ import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
 
 const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
-function debugVehicleRoleDnD(...args) {
-  void args;
-}
 
 export class VehicleActorSheet extends BaseModuleActorSheet {
   #listenerController = null;
@@ -198,12 +195,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
   async _onDelegatedDragStart(event, dragSource) {
     const dragData = beginActorRoleTransferDragFromElement(event, this.actor, dragSource);
-    debugVehicleRoleDnD("delegated dragstart", {
-      actorId: this.actor?.id ?? null,
-      dragSourceRole: dragSource?.dataset?.roleTransferSourceRole ?? null,
-      dragSourceType: dragSource?.dataset?.roleTransferSourceType ?? null,
-      hasDragData: Boolean(dragData)
-    });
     if (!dragData) return false;
 
     if (event.dataTransfer) {
@@ -215,12 +206,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
   async _onDropActor(event, actor) {
     const transferData = getActorRoleTransferDataFromEvent(event);
-    debugVehicleRoleDnD("_onDropActor entered", {
-      actorId: this.actor?.id ?? null,
-      droppedActorUuid: actor?.uuid ?? null,
-      transferData,
-      isInternalTransfer: isActorRoleTransferEventForHost(event, this.actor)
-    });
 
     if (transferData && isActorRoleTransferEventForHost(event, this.actor)) {
       let draggedActor = actor;
@@ -239,10 +224,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
       }
 
       const target = getActorRoleTransferTargetFromEvent(event);
-      debugVehicleRoleDnD("internal target parsed", {
-        actorId: this.actor?.id ?? null,
-        target
-      });
       if (!target) {
         ui.notifications?.warn("WET internal drop failed: could not resolve drop target.");
         return null;
@@ -275,13 +256,6 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     }
 
     const result = await transferVehicleActorRole(this.actor, draggedActor, transferData, target);
-    debugVehicleRoleDnD("internal transfer result", {
-      actorId: this.actor?.id ?? null,
-      draggedActorUuid: draggedActor?.uuid ?? null,
-      transferData,
-      target,
-      result
-    });
 
     switch (result.status) {
       case "assigned":
