@@ -199,6 +199,7 @@
           "Owner": "Owner",
           "VehicleType": "Vehicle Type",
           "Seats": "Seats",
+          "TrunkAccessible": "Trunk accessible",
           "State": "State",
           "Durability": "Durability",
           "Maneuverability": "Maneuverability",
@@ -210,7 +211,8 @@
         "Actions": {
           "ClearOwner": "Clear owner",
           "RemovePassenger": "Remove passenger",
-          "ClearDriver": "Clear driver"
+          "ClearDriver": "Clear driver",
+          "OpenTrunk": "Open trunk"
         },
         "Empty": {
           "Owner": "No owner assigned yet. Drag an actor here.",

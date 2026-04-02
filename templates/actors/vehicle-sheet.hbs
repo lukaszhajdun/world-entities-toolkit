@@ -242,6 +242,30 @@
             >
           </div>
         </section>
+
+        <section class="wet-sheet__section wet-vehicle-trunk-panel">
+          <div class="wet-field wet-vehicle-trunk-panel__availability">
+            <label class="wet-vehicle-trunk-panel__toggle" for="{{rootId}}-trunk-enabled">
+              <input
+                id="{{rootId}}-trunk-enabled"
+                type="checkbox"
+                name="system.storage.trunk.enabled"
+                {{#if isTrunkEnabled}}checked{{/if}}
+                {{#unless editable}}disabled{{/unless}}
+              >
+              <span>{{localize "WET.Sheets.Vehicle.Fields.TrunkAccessible"}}</span>
+            </label>
+          </div>
+
+          <button
+            class="wet-vehicle-trunk-panel__open"
+            type="button"
+            data-open-trunk="true"
+            {{#unless isTrunkEnabled}}disabled{{/unless}}
+          >
+            {{localize "WET.Sheets.Vehicle.Actions.OpenTrunk"}}
+          </button>
+        </section>
       </div>
 
       <div class="wet-vehicle-column wet-vehicle-column--right">

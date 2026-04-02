@@ -2,6 +2,7 @@ import {
   ACTOR_TYPES,
   MODULE_ID
 } from "../core/constants.js";
+import { STORAGE_SLOT_IDS } from "../data/storage-slot-config.js";
 import { getQualifiedActorType } from "../model/register-models.js";
 import {
   beginActorRoleTransferDragFromElement,
@@ -28,6 +29,7 @@ import {
 } from "../services/vehicle-actor.service.js";
 import { transferVehicleActorRole } from "../services/vehicle-role-transfer.service.js";
 import { BaseModuleActorSheet } from "./base-module-actor-sheet.js";
+import { openStorageWindow } from "./storage-window.js";
 
 const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
@@ -43,7 +45,10 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
     options.position = foundry.utils.mergeObject(
       options.position ?? {},
-      { width: 960 },
+      {
+        width: 960,
+        height: 900
+      },
       { inplace: false }
     );
 
@@ -87,6 +92,7 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     const passengerCapacity = getVehiclePassengerCapacity(this.actor);
     const passengersCount = passengers.length;
     const occupancyCount = getVehicleOccupancyCount(this.actor);
+    const isTrunkEnabled = this.actor?.system?.storage?.trunk?.enabled !== false;
 
     return foundry.utils.mergeObject(
       context,
@@ -99,7 +105,8 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
         hasPassengers: passengersCount > 0,
         passengersCount,
         passengerCapacity,
-        occupancyCount
+        occupancyCount,
+        isTrunkEnabled
       },
       { inplace: false }
     );
@@ -147,6 +154,12 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
         selector: "[data-passenger-open]",
         handler: (event, element) => {
           void this._onPassengerOpen(event, element);
+        }
+      },
+      {
+        selector: "[data-open-trunk]",
+        handler: event => {
+          void this._onOpenTrunk(event);
         }
       }
     ];
@@ -455,6 +468,13 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     if (!Number.isInteger(index)) return;
 
     await removeVehiclePassengerByIndex(this.actor, index);
+  }
+
+  async _onOpenTrunk(event) {
+    event.preventDefault();
+
+    if (this.actor?.system?.storage?.trunk?.enabled === false) return;
+    openStorageWindow(this.actor, STORAGE_SLOT_IDS.TRUNK);
   }
 }
 

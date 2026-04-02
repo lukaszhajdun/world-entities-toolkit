@@ -199,6 +199,7 @@
           "Owner": "Właściciel",
           "VehicleType": "Typ pojazdu",
           "Seats": "Miejsca",
+          "TrunkAccessible": "Bagażnik dostępny",
           "State": "Stan",
           "Durability": "Wytrzymałość",
           "Maneuverability": "Zwrotność",
@@ -210,7 +211,8 @@
         "Actions": {
           "ClearOwner": "Usuń właściciela",
           "RemovePassenger": "Usuń pasażera",
-          "ClearDriver": "Usuń kierowcę"
+          "ClearDriver": "Usuń kierowcę",
+          "OpenTrunk": "Otwórz bagażnik"
         },
         "Empty": {
           "Owner": "Nie przypisano jeszcze właściciela. Przeciągnij tutaj aktora.",
