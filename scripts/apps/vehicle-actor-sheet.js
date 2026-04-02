@@ -45,10 +45,7 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
 
     options.position = foundry.utils.mergeObject(
       options.position ?? {},
-      {
-        width: 960,
-        height: 900
-      },
+      { width: 960 },
       { inplace: false }
     );
 

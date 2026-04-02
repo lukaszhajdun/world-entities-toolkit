@@ -1,33 +1,21 @@
-.wet-vehicle-sheet {
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .wet-vehicle-shell {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
   gap: var(--wet-space-3);
-  height: 100%;
   min-width: 0;
-  min-height: 0;
 }
 
 .wet-vehicle-shell__top {
   display: grid;
   grid-template-columns: minmax(240px, 0.9fr) minmax(260px, 1fr) minmax(300px, 1.1fr);
-  flex: 1 1 auto;
   gap: var(--wet-space-3);
   align-items: stretch;
   min-width: 0;
-  min-height: 0;
 }
 
 .wet-vehicle-shell__bottom {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  flex: 0 0 auto;
   gap: var(--wet-space-3);
   align-items: start;
   min-width: 0;
@@ -51,7 +39,6 @@
   display: grid;
   grid-template-rows: auto 1fr;
   min-height: 0;
-  overflow: hidden;
 }
 
 .wet-vehicle-name-panel,
@@ -141,9 +128,7 @@
 .wet-vehicle-passengers-panel {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
 }
 
 .wet-vehicle-passengers-panel__header {
@@ -181,8 +166,8 @@
   flex: 1 1 auto;
   align-self: stretch;
   width: 100%;
-  min-height: 0;
-  max-height: 100%;
+  min-height: 320px;
+  max-height: 380px;
   min-width: 0;
   overflow: auto;
 }
