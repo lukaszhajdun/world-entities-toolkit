@@ -4,8 +4,9 @@ import {
   toModuleActorKey
 } from "../core/constants.js";
 import {
+  createActorReferencePresentation,
   createActorReference,
-  getActorTypeLabel,
+  hasStoredActorReference,
   isSameActorReference,
   resolveActorReference
 } from "./actor-ref.service.js";
@@ -29,18 +30,6 @@ export const VEHICLE_ROLE_KEYS = Object.freeze({
   DRIVER: "driver",
   PASSENGERS: "passengers"
 });
-
-function hasStoredActorReference(reference) {
-  if (!reference || typeof reference !== "object") return false;
-
-  return [
-    reference.uuid,
-    reference.id,
-    reference.name,
-    reference.img,
-    reference.type
-  ].some(value => typeof value === "string" && value.trim().length > 0);
-}
 
 export function isVehicleActorDocument(actor) {
   if (!actor || actor.documentName !== "Actor") return false;
@@ -91,22 +80,6 @@ export function getVehiclePassengerReferenceByIndex(actor, passengerIndex) {
 
   const reference = passengers[passengerIndex];
   return hasStoredActorReference(reference) ? reference : null;
-}
-
-function getResolvedActorPresentation(reference, resolved, fallbackNameKey) {
-  const actorType = resolved?.type ?? reference?.type ?? "";
-  const resolvedUuid = typeof resolved?.uuid === "string" ? resolved.uuid : "";
-  const resolvedId = typeof resolved?.id === "string" ? resolved.id : "";
-
-  return {
-    uuid: reference?.uuid || resolvedUuid || "",
-    id: reference?.id || resolvedId || "",
-    name: resolved?.name ?? reference?.name ?? game.i18n.localize(fallbackNameKey),
-    img: resolved?.img ?? reference?.img ?? "icons/svg/mystery-man.svg",
-    type: actorType,
-    typeLabel: getActorTypeLabel(actorType),
-    exists: Boolean(resolved)
-  };
 }
 
 export function getVehiclePassengerCapacity(actor) {
@@ -160,7 +133,7 @@ export async function prepareVehicleOwner(actor) {
   if (!reference) return null;
 
   const resolved = await resolveActorReference(reference);
-  return getResolvedActorPresentation(reference, resolved, "WET.Vehicle.Owner.UnknownName");
+  return createActorReferencePresentation(reference, resolved, "WET.Vehicle.Owner.UnknownName");
 }
 
 export async function prepareVehicleDriver(actor) {
@@ -168,7 +141,7 @@ export async function prepareVehicleDriver(actor) {
   if (!reference) return null;
 
   const resolved = await resolveActorReference(reference);
-  return getResolvedActorPresentation(reference, resolved, "WET.Vehicle.Driver.UnknownName");
+  return createActorReferencePresentation(reference, resolved, "WET.Vehicle.Driver.UnknownName");
 }
 
 export async function assignVehicleOwner(actor, candidateActor) {
@@ -267,7 +240,7 @@ export async function prepareVehiclePassengers(actor) {
 
       return {
         index,
-        ...getResolvedActorPresentation(passenger, resolved, "WET.Vehicle.Passengers.UnknownName")
+        ...createActorReferencePresentation(passenger, resolved, "WET.Vehicle.Passengers.UnknownName")
       };
     })
   );

@@ -10,6 +10,32 @@ export function isActorReference(reference) {
   ].every(Boolean);
 }
 
+function normalizeStringValue(value) {
+  return typeof value === "string" ? value : "";
+}
+
+export function normalizeActorReference(reference = null) {
+  return {
+    uuid: normalizeStringValue(reference?.uuid),
+    id: normalizeStringValue(reference?.id),
+    name: normalizeStringValue(reference?.name),
+    img: normalizeStringValue(reference?.img),
+    type: normalizeStringValue(reference?.type)
+  };
+}
+
+export function hasStoredActorReference(reference) {
+  const normalized = normalizeActorReference(reference);
+
+  return [
+    normalized.uuid,
+    normalized.id,
+    normalized.name,
+    normalized.img,
+    normalized.type
+  ].some(value => value.trim().length > 0);
+}
+
 function isActorReferenceLike(reference) {
   if (!reference || typeof reference !== "object") return false;
 
@@ -23,13 +49,13 @@ export function createActorReference(actor) {
     throw new Error("createActorReference expected an Actor document.");
   }
 
-  return {
+  return normalizeActorReference({
     uuid: actor.uuid ?? "",
     id: actor.id ?? "",
     name: actor.name ?? "",
     img: actor.img ?? "",
     type: actor.type ?? ""
-  };
+  });
 }
 
 export function isSameActorReference(left, right) {
@@ -81,4 +107,21 @@ export function getActorTypeLabel(type) {
 
   if (localized !== localizationKey) return localized;
   return type;
+}
+
+export function createActorReferencePresentation(reference, resolvedActor, fallbackNameKey) {
+  const normalizedReference = normalizeActorReference(reference);
+  const actorType = resolvedActor?.type ?? normalizedReference.type;
+  const resolvedUuid = typeof resolvedActor?.uuid === "string" ? resolvedActor.uuid : "";
+  const resolvedId = typeof resolvedActor?.id === "string" ? resolvedActor.id : "";
+
+  return {
+    uuid: normalizedReference.uuid || resolvedUuid,
+    id: normalizedReference.id || resolvedId,
+    name: resolvedActor?.name ?? normalizedReference.name ?? game.i18n.localize(fallbackNameKey),
+    img: resolvedActor?.img ?? normalizedReference.img ?? "icons/svg/mystery-man.svg",
+    type: actorType,
+    typeLabel: getActorTypeLabel(actorType),
+    exists: Boolean(resolvedActor)
+  };
 }

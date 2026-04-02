@@ -1,6 +1,6 @@
 import {
+  createActorReferencePresentation,
   createActorReference,
-  getActorTypeLabel,
   isSameActorReference,
   resolveActorReference
 } from "./actor-ref.service.js";
@@ -18,13 +18,7 @@ export async function prepareGroupMembers(actor) {
 
       return {
         index,
-        uuid: member?.uuid ?? "",
-        id: member?.id ?? "",
-        name: resolved?.name ?? member?.name ?? game.i18n.localize("WET.Group.Members.UnknownName"),
-        img: resolved?.img ?? member?.img ?? "icons/svg/mystery-man.svg",
-        type: resolved?.type ?? member?.type ?? "",
-        typeLabel: getActorTypeLabel(resolved?.type ?? member?.type ?? ""),
-        exists: Boolean(resolved)
+        ...createActorReferencePresentation(member, resolved, "WET.Group.Members.UnknownName")
       };
     })
   );

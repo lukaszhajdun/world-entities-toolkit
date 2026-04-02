@@ -33,8 +33,6 @@ const { FilePicker } = foundry.applications.apps;
 const VEHICLE_TYPE = getQualifiedActorType(ACTOR_TYPES.VEHICLE);
 
 export class VehicleActorSheet extends BaseModuleActorSheet {
-  #listenerController = null;
-
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -107,79 +105,51 @@ export class VehicleActorSheet extends BaseModuleActorSheet {
     );
   }
 
-  async _onRender(context, options) {
-    await super._onRender(context, options);
-    this._bindUiListeners();
-  }
-
-  async close(options = {}) {
-    this._unbindUiListeners();
-    return super.close(options);
-  }
-
-  _unbindUiListeners() {
-    this.#listenerController?.abort();
-    this.#listenerController = null;
-  }
-
-  _bindUiListeners() {
-    this._unbindUiListeners();
-
-    const form = this.form;
-    if (!(form instanceof Element)) return;
-
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    form.addEventListener("click", event => this._onSheetClick(event), { signal });
-
-    this.#listenerController = controller;
-  }
-
-  _onSheetClick(event) {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    const portraitButton = target.closest("[data-edit-image]");
-    if (portraitButton) {
-      void this._onPortraitEdit(event);
-      return;
-    }
-
-    const ownerClearButton = target.closest("[data-owner-clear]");
-    if (ownerClearButton) {
-      void this._onOwnerClear(event);
-      return;
-    }
-
-    const ownerOpenButton = target.closest("[data-owner-open]");
-    if (ownerOpenButton) {
-      void this._onOwnerOpen(event);
-      return;
-    }
-
-    const driverClearButton = target.closest("[data-driver-clear]");
-    if (driverClearButton) {
-      void this._onDriverClear(event);
-      return;
-    }
-
-    const driverOpenButton = target.closest("[data-driver-open]");
-    if (driverOpenButton) {
-      void this._onDriverOpen(event);
-      return;
-    }
-
-    const passengerRemoveButton = target.closest("[data-passenger-remove]");
-    if (passengerRemoveButton) {
-      void this._onPassengerRemove(event, passengerRemoveButton);
-      return;
-    }
-
-    const passengerOpenButton = target.closest("[data-passenger-open]");
-    if (passengerOpenButton) {
-      void this._onPassengerOpen(event, passengerOpenButton);
-    }
+  _getSheetClickActionMap() {
+    return [
+      {
+        selector: "[data-edit-image]",
+        handler: event => {
+          void this._onPortraitEdit(event);
+        }
+      },
+      {
+        selector: "[data-owner-clear]",
+        handler: event => {
+          void this._onOwnerClear(event);
+        }
+      },
+      {
+        selector: "[data-owner-open]",
+        handler: event => {
+          void this._onOwnerOpen(event);
+        }
+      },
+      {
+        selector: "[data-driver-clear]",
+        handler: event => {
+          void this._onDriverClear(event);
+        }
+      },
+      {
+        selector: "[data-driver-open]",
+        handler: event => {
+          void this._onDriverOpen(event);
+        }
+      },
+      {
+        selector: "[data-passenger-remove]",
+        handler: (event, element) => {
+          void this._onPassengerRemove(event, element);
+        }
+      },
+      {
+        selector: "[data-passenger-open]",
+        handler: (event, element) => {
+          void this._onPassengerOpen(event, element);
+        }
+      }
+    ];
   }
 
   _getDelegatedDragStartElement(source) {

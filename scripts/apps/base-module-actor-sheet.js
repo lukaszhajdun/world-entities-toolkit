@@ -201,14 +201,42 @@ export class BaseModuleActorSheet extends HandlebarsApplicationMixin(ActorSheetV
     this.#roleDnDController.bind(root);
   }
 
+  _getSheetClickActionMap() {
+    return [];
+  }
+
+  _dispatchSheetClickActions(event, actionMap = this._getSheetClickActionMap()) {
+    const target = event?.target;
+    if (!(target instanceof Element)) return false;
+    if (!Array.isArray(actionMap) || actionMap.length === 0) return false;
+
+    for (const action of actionMap) {
+      const selector = String(action?.selector ?? "").trim();
+      const handler = action?.handler;
+
+      if (!selector || typeof handler !== "function") continue;
+
+      const matched = target.closest(selector);
+      if (!(matched instanceof Element)) continue;
+
+      handler(event, matched);
+      return true;
+    }
+
+    return false;
+  }
+
   _onBaseClick(event) {
     const target = event.target;
     if (!(target instanceof Element)) return;
 
     const lockToggle = target.closest("[data-lock-toggle]");
-    if (!lockToggle) return;
+    if (lockToggle) {
+      void this._onToggleEditLock(event);
+      return;
+    }
 
-    void this._onToggleEditLock(event);
+    this._dispatchSheetClickActions(event);
   }
 
   _onBaseChange(event) {

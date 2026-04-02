@@ -20,8 +20,6 @@ const { FilePicker } = foundry.applications.apps;
 const GROUP_TYPE = getQualifiedActorType(ACTOR_TYPES.GROUP);
 
 export class GroupActorSheet extends BaseModuleActorSheet {
-  #listenerController = null;
-
   static get DEFAULT_OPTIONS() {
     const options = foundry.utils.deepClone(super.DEFAULT_OPTIONS);
 
@@ -76,55 +74,27 @@ export class GroupActorSheet extends BaseModuleActorSheet {
     );
   }
 
-  async _onRender(context, options) {
-    await super._onRender(context, options);
-    this._bindUiListeners();
-  }
-
-  async close(options = {}) {
-    this._unbindUiListeners();
-    return super.close(options);
-  }
-
-  _unbindUiListeners() {
-    this.#listenerController?.abort();
-    this.#listenerController = null;
-  }
-
-  _bindUiListeners() {
-    this._unbindUiListeners();
-
-    const form = this.form;
-    if (!(form instanceof Element)) return;
-
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    form.addEventListener("click", event => this._onSheetClick(event), { signal });
-
-    this.#listenerController = controller;
-  }
-
-  _onSheetClick(event) {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    const portraitButton = target.closest("[data-edit-image]");
-    if (portraitButton) {
-      void this._onPortraitEdit(event);
-      return;
-    }
-
-    const memberOpenButton = target.closest("[data-member-open]");
-    if (memberOpenButton) {
-      void this._onMemberOpen(event, memberOpenButton);
-      return;
-    }
-
-    const memberRemoveButton = target.closest("[data-member-remove]");
-    if (memberRemoveButton) {
-      void this._onMemberRemove(event, memberRemoveButton);
-    }
+  _getSheetClickActionMap() {
+    return [
+      {
+        selector: "[data-edit-image]",
+        handler: event => {
+          void this._onPortraitEdit(event);
+        }
+      },
+      {
+        selector: "[data-member-open]",
+        handler: (event, element) => {
+          void this._onMemberOpen(event, element);
+        }
+      },
+      {
+        selector: "[data-member-remove]",
+        handler: (event, element) => {
+          void this._onMemberRemove(event, element);
+        }
+      }
+    ];
   }
 
   async _onPortraitEdit(event) {
