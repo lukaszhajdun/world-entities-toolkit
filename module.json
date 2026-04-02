@@ -17,6 +17,7 @@
   ],
   "styles": [
     "styles/base.css",
+    "styles/faction-sheet.css",
     "styles/group-sheet.css",
     "styles/vehicle-sheet.css",
     "styles/storage-window.css"

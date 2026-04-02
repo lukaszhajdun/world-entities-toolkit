@@ -75,6 +75,28 @@
         }
       }
     },
+    "Faction": {
+      "KeyFigures": {
+        "UnknownName": "Unknown actor",
+        "MissingActorLabel": "Missing actor"
+      },
+      "Havens": {
+        "UnknownName": "Unknown actor",
+        "MissingActorLabel": "Missing actor"
+      },
+      "Challenges": {
+        "UnknownName": "Unknown actor",
+        "MissingActorLabel": "Missing actor"
+      },
+      "Notifications": {
+        "Added": "Actor added.",
+        "AlreadyAdded": "This actor is already present in this section.",
+        "CannotAddSelf": "You cannot add this faction actor to itself.",
+        "DropLocked": "Unlock editing to add actors.",
+        "InvalidDrop": "Only actor drops are supported here.",
+        "MissingActor": "Could not find the linked actor."
+      }
+    },
     "Vehicle": {
       "Owner": {
         "UnknownName": "Unknown Actor",
@@ -201,6 +223,41 @@
           "State": "e.g. Operational",
           "Description": "Describe the vehicle...",
           "Issues": "List faults, damage, and maintenance notes..."
+        }
+      },
+      "Faction": {
+        "Label": "Faction (WE)",
+        "Sections": {
+          "KeyFigures": "Key Figures",
+          "Havens": "Havens",
+          "Challenges": "Challenges",
+          "Description": "Description",
+          "Notes": "Notes"
+        },
+        "Fields": {
+          "Size": "Size",
+          "Type": "Type",
+          "Leadership": "Leadership",
+          "Doctrine": "Doctrine"
+        },
+        "Actions": {
+          "RemoveKeyFigure": "Remove key figure",
+          "RemoveHaven": "Remove haven",
+          "RemoveChallenge": "Remove challenge"
+        },
+        "Empty": {
+          "KeyFigures": "No key figures yet. Drag actors here.",
+          "Havens": "No havens yet. Drag actors here.",
+          "Challenges": "No challenges yet. Drag actors here."
+        },
+        "Placeholders": {
+          "Name": "Faction name",
+          "Size": "e.g. Regional",
+          "Type": "e.g. Military order",
+          "Leadership": "e.g. Council of Three",
+          "Doctrine": "e.g. Expansion through trade",
+          "Description": "Describe this faction...",
+          "Notes": "Add strategic notes and hooks..."
         }
       }
     },

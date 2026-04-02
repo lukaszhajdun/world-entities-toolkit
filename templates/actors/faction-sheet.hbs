@@ -1,0 +1,301 @@
+<form class="wet-sheet wet-faction-sheet {{cssClass}}" autocomplete="off">
+  <div class="wet-faction-shell">
+    <div class="wet-faction-shell__grid">
+      <div class="wet-faction-shell__left">
+        <section class="wet-sheet__section wet-faction-name-panel">
+          <div class="wet-field">
+            <div class="wet-faction-name-panel__header">
+              <button
+                class="wet-lock-toggle {{#if isLocked}}is-locked{{else}}is-unlocked{{/if}}"
+                type="button"
+                data-lock-toggle="true"
+                title="{{lockToggleTitle}}"
+                aria-label="{{lockToggleLabel}}"
+                {{#unless canToggleLock}}disabled{{/unless}}
+              >
+                <i class="{{lockToggleIcon}}" aria-hidden="true"></i>
+                <span class="wet-visually-hidden">{{lockToggleLabel}}</span>
+              </button>
+
+              <label class="wet-field__label" for="{{rootId}}-name">
+                {{localize "WET.Sheets.Common.Fields.Name"}}
+              </label>
+            </div>
+
+            <input
+              id="{{rootId}}-name"
+              class="wet-field__input wet-field__input--title"
+              type="text"
+              name="name"
+              value="{{actor.name}}"
+              placeholder="{{localize "WET.Sheets.Faction.Placeholders.Name"}}"
+              {{#unless editable}}disabled{{/unless}}
+            >
+          </div>
+        </section>
+
+        <section class="wet-sheet__section wet-faction-identity-panel">
+          <div class="wet-faction-identity-grid">
+            <div class="wet-faction-identity-grid__portrait-slot">
+              <button
+                class="wet-portrait-button wet-sheet__portrait wet-faction-header__portrait {{#if canEdit}}is-editable{{/if}}"
+                type="button"
+                data-edit-image="true"
+                data-edit="img"
+                title="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
+                aria-label="{{localize "WET.Sheets.Common.Actions.EditPortrait"}}"
+                {{#unless canEdit}}disabled{{/unless}}
+              >
+                <img
+                  class="wet-sheet__portrait-image"
+                  src="{{actor.img}}"
+                  alt="{{actor.name}}"
+                >
+              </button>
+            </div>
+
+            <div class="wet-field">
+              <label class="wet-field__label" for="{{rootId}}-size">
+                {{localize "WET.Sheets.Faction.Fields.Size"}}
+              </label>
+              <input
+                id="{{rootId}}-size"
+                class="wet-field__input"
+                type="text"
+                name="system.identity.size"
+                value="{{system.identity.size}}"
+                placeholder="{{localize "WET.Sheets.Faction.Placeholders.Size"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+
+            <div class="wet-field">
+              <label class="wet-field__label" for="{{rootId}}-type">
+                {{localize "WET.Sheets.Faction.Fields.Type"}}
+              </label>
+              <input
+                id="{{rootId}}-type"
+                class="wet-field__input"
+                type="text"
+                name="system.identity.type"
+                value="{{system.identity.type}}"
+                placeholder="{{localize "WET.Sheets.Faction.Placeholders.Type"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+
+            <div class="wet-field">
+              <label class="wet-field__label" for="{{rootId}}-leadership">
+                {{localize "WET.Sheets.Faction.Fields.Leadership"}}
+              </label>
+              <input
+                id="{{rootId}}-leadership"
+                class="wet-field__input"
+                type="text"
+                name="system.identity.leadership"
+                value="{{system.identity.leadership}}"
+                placeholder="{{localize "WET.Sheets.Faction.Placeholders.Leadership"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+
+            <div class="wet-field">
+              <label class="wet-field__label" for="{{rootId}}-doctrine">
+                {{localize "WET.Sheets.Faction.Fields.Doctrine"}}
+              </label>
+              <input
+                id="{{rootId}}-doctrine"
+                class="wet-field__input"
+                type="text"
+                name="system.identity.doctrine"
+                value="{{system.identity.doctrine}}"
+                placeholder="{{localize "WET.Sheets.Faction.Placeholders.Doctrine"}}"
+                {{#unless editable}}disabled{{/unless}}
+              >
+            </div>
+          </div>
+        </section>
+
+        <section class="wet-sheet__section wet-faction-text-panel">
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-description">
+              {{localize "WET.Sheets.Faction.Sections.Description"}}
+            </label>
+            <textarea
+              id="{{rootId}}-description"
+              class="wet-field__textarea"
+              name="system.summary.description"
+              placeholder="{{localize "WET.Sheets.Faction.Placeholders.Description"}}"
+              rows="8"
+              {{#unless editable}}disabled{{/unless}}
+            >{{system.summary.description}}</textarea>
+          </div>
+
+          <div class="wet-field">
+            <label class="wet-field__label" for="{{rootId}}-notes">
+              {{localize "WET.Sheets.Faction.Sections.Notes"}}
+            </label>
+            <textarea
+              id="{{rootId}}-notes"
+              class="wet-field__textarea"
+              name="system.summary.notes"
+              placeholder="{{localize "WET.Sheets.Faction.Placeholders.Notes"}}"
+              rows="8"
+              {{#unless editable}}disabled{{/unless}}
+            >{{system.summary.notes}}</textarea>
+          </div>
+        </section>
+      </div>
+
+      <div class="wet-faction-shell__right">
+        <section class="wet-sheet__section wet-faction-list-panel">
+          <div class="wet-field wet-field--panel">
+            <div class="wet-field__label wet-field__label--section" role="heading" aria-level="2">
+              {{localize "WET.Sheets.Faction.Sections.KeyFigures"}} ({{keyFiguresCount}})
+            </div>
+
+            <div class="wet-faction-list-panel__body wet-drop-zone" data-drop-zone="keyFigures">
+              {{#if hasKeyFigures}}
+                <div class="wet-member-list">
+                  {{#each keyFigures as |entry|}}
+                    <article class="wet-member-card {{#unless entry.exists}}wet-member-card--missing{{/unless}}">
+                      <button class="wet-member-card__main" type="button" data-key-figure-open="true" data-key-figure-index="{{entry.index}}">
+                        <span class="wet-member-card__media">
+                          <span class="wet-member-card__thumb">
+                            <img class="wet-member-card__image" src="{{entry.img}}" alt="{{entry.name}}">
+                          </span>
+                        </span>
+
+                        <span class="wet-member-card__content">
+                          <span class="wet-member-card__name">{{entry.name}}</span>
+                          {{#if entry.role}}
+                            <span class="wet-member-card__meta wet-muted">{{entry.role}}</span>
+                          {{/if}}
+                          {{#unless entry.exists}}
+                            <span class="wet-member-card__missing wet-muted">{{localize "WET.Faction.KeyFigures.MissingActorLabel"}}</span>
+                          {{/unless}}
+                        </span>
+                      </button>
+
+                      <button
+                        class="wet-inline-icon-button wet-member-card__remove"
+                        type="button"
+                        title="{{localize "WET.Sheets.Faction.Actions.RemoveKeyFigure"}}"
+                        aria-label="{{localize "WET.Sheets.Faction.Actions.RemoveKeyFigure"}}"
+                        data-key-figure-remove="true"
+                        data-key-figure-index="{{entry.index}}"
+                        {{#unless @root.canEdit}}disabled{{/unless}}
+                      >
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                    </article>
+                  {{/each}}
+                </div>
+              {{else}}
+                <div class="wet-empty-state">
+                  <p class="wet-empty-state__text">{{localize "WET.Sheets.Faction.Empty.KeyFigures"}}</p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </section>
+
+        <section class="wet-sheet__section wet-faction-list-panel">
+          <div class="wet-field wet-field--panel">
+            <div class="wet-field__label wet-field__label--section" role="heading" aria-level="2">
+              {{localize "WET.Sheets.Faction.Sections.Havens"}} ({{havensCount}})
+            </div>
+
+            <div class="wet-faction-list-panel__body wet-drop-zone" data-drop-zone="havens">
+              {{#if hasHavens}}
+                <div class="wet-member-list">
+                  {{#each havens as |entry|}}
+                    <article class="wet-member-card {{#unless entry.exists}}wet-member-card--missing{{/unless}}">
+                      <button class="wet-member-card__main" type="button" data-haven-open="true" data-haven-index="{{entry.index}}">
+                        <span class="wet-member-card__media">
+                          <span class="wet-member-card__thumb">
+                            <img class="wet-member-card__image" src="{{entry.img}}" alt="{{entry.name}}">
+                          </span>
+                        </span>
+                        <span class="wet-member-card__content">
+                          <span class="wet-member-card__name">{{entry.name}}</span>
+                          {{#unless entry.exists}}
+                            <span class="wet-member-card__missing wet-muted">{{localize "WET.Faction.Havens.MissingActorLabel"}}</span>
+                          {{/unless}}
+                        </span>
+                      </button>
+
+                      <button
+                        class="wet-inline-icon-button wet-member-card__remove"
+                        type="button"
+                        title="{{localize "WET.Sheets.Faction.Actions.RemoveHaven"}}"
+                        aria-label="{{localize "WET.Sheets.Faction.Actions.RemoveHaven"}}"
+                        data-haven-remove="true"
+                        data-haven-index="{{entry.index}}"
+                        {{#unless @root.canEdit}}disabled{{/unless}}
+                      >
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                    </article>
+                  {{/each}}
+                </div>
+              {{else}}
+                <div class="wet-empty-state">
+                  <p class="wet-empty-state__text">{{localize "WET.Sheets.Faction.Empty.Havens"}}</p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </section>
+
+        <section class="wet-sheet__section wet-faction-list-panel">
+          <div class="wet-field wet-field--panel">
+            <div class="wet-field__label wet-field__label--section" role="heading" aria-level="2">
+              {{localize "WET.Sheets.Faction.Sections.Challenges"}} ({{challengesCount}})
+            </div>
+
+            <div class="wet-faction-list-panel__body wet-drop-zone" data-drop-zone="challenges">
+              {{#if hasChallenges}}
+                <div class="wet-member-list">
+                  {{#each challenges as |entry|}}
+                    <article class="wet-member-card {{#unless entry.exists}}wet-member-card--missing{{/unless}}">
+                      <button class="wet-member-card__main" type="button" data-challenge-open="true" data-challenge-index="{{entry.index}}">
+                        <span class="wet-member-card__media">
+                          <span class="wet-member-card__thumb">
+                            <img class="wet-member-card__image" src="{{entry.img}}" alt="{{entry.name}}">
+                          </span>
+                        </span>
+                        <span class="wet-member-card__content">
+                          <span class="wet-member-card__name">{{entry.name}}</span>
+                          {{#unless entry.exists}}
+                            <span class="wet-member-card__missing wet-muted">{{localize "WET.Faction.Challenges.MissingActorLabel"}}</span>
+                          {{/unless}}
+                        </span>
+                      </button>
+
+                      <button
+                        class="wet-inline-icon-button wet-member-card__remove"
+                        type="button"
+                        title="{{localize "WET.Sheets.Faction.Actions.RemoveChallenge"}}"
+                        aria-label="{{localize "WET.Sheets.Faction.Actions.RemoveChallenge"}}"
+                        data-challenge-remove="true"
+                        data-challenge-index="{{entry.index}}"
+                        {{#unless @root.canEdit}}disabled{{/unless}}
+                      >
+                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                      </button>
+                    </article>
+                  {{/each}}
+                </div>
+              {{else}}
+                <div class="wet-empty-state">
+                  <p class="wet-empty-state__text">{{localize "WET.Sheets.Faction.Empty.Challenges"}}</p>
+                </div>
+              {{/if}}
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</form>

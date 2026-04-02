@@ -75,6 +75,28 @@
         }
       }
     },
+    "Faction": {
+      "KeyFigures": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora"
+      },
+      "Havens": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora"
+      },
+      "Challenges": {
+        "UnknownName": "Nieznany aktor",
+        "MissingActorLabel": "Nie znaleziono aktora"
+      },
+      "Notifications": {
+        "Added": "Aktor został dodany.",
+        "AlreadyAdded": "Ten aktor już znajduje się w tej sekcji.",
+        "CannotAddSelf": "Nie możesz dodać tej frakcji do samej siebie.",
+        "DropLocked": "Odblokuj edycję, aby dodawać aktorów.",
+        "InvalidDrop": "W tym miejscu można upuszczać tylko aktorów.",
+        "MissingActor": "Nie udało się odnaleźć powiązanego aktora."
+      }
+    },
     "Vehicle": {
       "Owner": {
         "UnknownName": "Nieznany aktor",
@@ -201,6 +223,41 @@
           "State": "np. Sprawny",
           "Description": "Opisz pojazd...",
           "Issues": "Wpisz usterki, uszkodzenia i notatki serwisowe..."
+        }
+      },
+      "Faction": {
+        "Label": "Frakcja (WE)",
+        "Sections": {
+          "KeyFigures": "Kluczowe osoby",
+          "Havens": "Przystanie",
+          "Challenges": "Wyzwania",
+          "Description": "Opis",
+          "Notes": "Notatki"
+        },
+        "Fields": {
+          "Size": "Skala",
+          "Type": "Typ",
+          "Leadership": "Przywództwo",
+          "Doctrine": "Doktryna"
+        },
+        "Actions": {
+          "RemoveKeyFigure": "Usuń kluczową osobę",
+          "RemoveHaven": "Usuń przystań",
+          "RemoveChallenge": "Usuń wyzwanie"
+        },
+        "Empty": {
+          "KeyFigures": "Nie dodano jeszcze kluczowych osób. Przeciągnij tutaj aktorów.",
+          "Havens": "Nie dodano jeszcze przystani. Przeciągnij tutaj aktorów.",
+          "Challenges": "Nie dodano jeszcze wyzwań. Przeciągnij tutaj aktorów."
+        },
+        "Placeholders": {
+          "Name": "Nazwa frakcji",
+          "Size": "np. Regionalna",
+          "Type": "np. Zakon militarny",
+          "Leadership": "np. Rada Trzech",
+          "Doctrine": "np. Ekspansja przez handel",
+          "Description": "Opisz tę frakcję...",
+          "Notes": "Dodaj notatki strategiczne i zaczepy fabularne..."
         }
       }
     },
