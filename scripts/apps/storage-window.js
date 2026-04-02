@@ -183,16 +183,7 @@ export class StorageWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     dropZone.addEventListener("drop", event => void this._onDropToStorage(event), { signal });
 
     root.addEventListener("click", event => {
-      const removeButton = event.target.closest("[data-storage-item-remove]");
-      if (removeButton) {
-        void this._onItemRemove(event, removeButton);
-        return;
-      }
-
-      const opener = event.target.closest("[data-storage-item-open]");
-      if (opener) {
-        void this._onItemOpen(event, opener);
-      }
+      this._dispatchClickActions(event);
     }, { signal });
 
     root.addEventListener("dragstart", event => {
@@ -219,6 +210,43 @@ export class StorageWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     }, { signal });
 
     this.#listenerController = controller;
+  }
+
+  _getClickActionMap() {
+    return [
+      {
+        selector: "[data-storage-item-remove]",
+        handler: (event, element) => {
+          void this._onItemRemove(event, element);
+        }
+      },
+      {
+        selector: "[data-storage-item-open]",
+        handler: (event, element) => {
+          void this._onItemOpen(event, element);
+        }
+      }
+    ];
+  }
+
+  _dispatchClickActions(event, actionMap = this._getClickActionMap()) {
+    const target = event?.target;
+    if (!(target instanceof Element)) return false;
+    if (!Array.isArray(actionMap) || actionMap.length === 0) return false;
+
+    for (const action of actionMap) {
+      const selector = String(action?.selector ?? "").trim();
+      const handler = action?.handler;
+      if (!selector || typeof handler !== "function") continue;
+
+      const matched = target.closest(selector);
+      if (!(matched instanceof Element)) continue;
+
+      handler(event, matched);
+      return true;
+    }
+
+    return false;
   }
 
   async #queueRefresh() {
